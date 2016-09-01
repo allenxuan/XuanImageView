@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.allenxuan.xuanyihuang.xuanimageviewproject">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".SingleImageLaunchActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ImagePagerActivity"
+            android:parentActivityName=".SingleImageLaunchActivity">
+            <!--  meta-data 用于支持 support 4.0 以及以下来指明上级活动 -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SingleImageLaunchActivity" />
+        </activity>
+    </application>
+
+</manifest>

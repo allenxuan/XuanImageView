@@ -14,12 +14,14 @@ import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
+import com.allenxuan.xuanyihuang.xuanimageview.GestureDetectors.RotationGestureDetector;
+
 /**
  * Created by xuanyihuang on 8/30/16.
  */
 
 public class XuanImageView extends ImageView
-        implements ViewTreeObserver.OnGlobalLayoutListener,View.OnTouchListener,ScaleGestureDetector.OnScaleGestureListener {
+        implements ViewTreeObserver.OnGlobalLayoutListener,View.OnTouchListener,ScaleGestureDetector.OnScaleGestureListener, RotationGestureDetector.OnRotationGestureListener{
     private boolean mImageLoadedFirstTime = false;
     private float mInitScale;
     private float mMaxScale;
@@ -39,6 +41,8 @@ public class XuanImageView extends ImageView
     private int mLastPointerCount;
     private float mLastX;
     private float mLastY;
+    private float mRotateAngle;
+    private RotationGestureDetector mRotateGestureDetector;
 
     public XuanImageView(Context context) {
         this(context, null);
@@ -81,7 +85,7 @@ public class XuanImageView extends ImageView
         mTouchSlope = ViewConfiguration.get(context).getScaledTouchSlop();
         isDrag = false;
         mLastPointerCount = 0;
-
+        mRotateGestureDetector = new RotationGestureDetector(this);
     }
 
     @Override
@@ -164,8 +168,10 @@ public class XuanImageView extends ImageView
          *  return ture;
          */
 
+//        mRotateGestureDetector.onTouchEvent(motionEvent);
+
+
         //pointerCount不可能为0
-        int tempCount = mLastPointerCount;
         int pointerCount = motionEvent.getPointerCount();
         float pivotX = 0;
         float pivotY = 0;
@@ -372,6 +378,11 @@ public class XuanImageView extends ImageView
         }
 
         return rectF;
+    }
+
+    @Override
+    public void OnRotation(RotationGestureDetector rotationDetector) {
+        mRotateAngle = rotationDetector.getAngle();
     }
 
     private class AutoScaleRunnable implements Runnable {

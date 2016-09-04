@@ -169,6 +169,8 @@ public class XuanImageView extends ImageView
          */
 
 //        mRotateGestureDetector.onTouchEvent(motionEvent);
+        //A
+        //B
 
 
         //pointerCount不可能为0

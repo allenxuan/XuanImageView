@@ -41,8 +41,11 @@ public class XuanImageView extends ImageView
     private int mLastPointerCount;
     private float mLastX;
     private float mLastY;
-    private float mRotateAngle;
+    private float mAngle;
+    private float mPreviousAngle;
     private RotationGestureDetector mRotateGestureDetector;
+    private boolean canStillRotate;
+    private boolean isAutoRotate;
 
     public XuanImageView(Context context) {
         this(context, null);
@@ -86,6 +89,8 @@ public class XuanImageView extends ImageView
         isDrag = false;
         mLastPointerCount = 0;
         mRotateGestureDetector = new RotationGestureDetector(this);
+        mAngle = 0;
+        mPreviousAngle = 0;
     }
 
     @Override
@@ -162,15 +167,13 @@ public class XuanImageView extends ImageView
 
 
         mScaleGestureDetector.onTouchEvent(motionEvent);
+
         /**
          * 不能这么写
          * if(mScaleGestureDetector.onTouchEvent(motionEvent))
          *  return ture;
          */
-
-//        mRotateGestureDetector.onTouchEvent(motionEvent);
-        //A
-        //B
+        mRotateGestureDetector.onTouchEvent(motionEvent);
 
 
         //pointerCount不可能为0
@@ -245,6 +248,8 @@ public class XuanImageView extends ImageView
             case MotionEvent.ACTION_CANCEL:
                 mLastPointerCount = 0;
         }
+
+
 
         return true;
     }
@@ -383,8 +388,30 @@ public class XuanImageView extends ImageView
     }
 
     @Override
-    public void OnRotation(RotationGestureDetector rotationDetector) {
-        mRotateAngle = rotationDetector.getAngle();
+    public boolean OnRotate(RotationGestureDetector rotationDetector) {
+        mAngle = rotationDetector.getAngle();
+        mPreviousAngle = rotationDetector.getPreviousAngle();
+        mScaleMatrix.postRotate(mAngle - mPreviousAngle, rotationDetector.getPivotX(), rotationDetector.getPivotY());
+        setImageMatrix(mScaleMatrix);
+
+        return true;
+    }
+
+    @Override
+    public boolean StopRotate(RotationGestureDetector rotationGestureDetector) {
+        mAngle = rotationGestureDetector.getAngle();
+        float ReverseReverseAngle = 0;
+        float ReverseAngle = 0;
+        if(mAngle < -180.0f)
+            ReverseReverseAngle = mAngle + 360.0f;
+        else if(mAngle > 180.0f)
+            ReverseReverseAngle = mAngle - 360.0f;
+        else
+            ReverseReverseAngle = mAngle;
+        ReverseAngle = -ReverseReverseAngle;
+        postDelayed(new AutoRotateRunnable(ReverseAngle, rotationGestureDetector.getPivotX(), rotationGestureDetector.getPivotY(), 40), 16);
+
+        return true;
     }
 
     private class AutoScaleRunnable implements Runnable {
@@ -425,6 +452,48 @@ public class XuanImageView extends ImageView
 
                 isAutoScale = false;
             }
+
+        }
+    }
+
+
+    private class AutoRotateRunnable implements Runnable {
+        float targetRotateAngle;
+        float PivotX;
+        float PivotY;
+        int TotalRotateTimes;
+        float AnglePerTime;
+        float AccumulativeRotateTimes;
+        float AccumulativeRotateAngles;
+
+        public AutoRotateRunnable(float targetRotateAngle, float PivotX, float PivotY, int TotalRotateTimes) {
+            this.targetRotateAngle = targetRotateAngle;
+            this.PivotX = PivotX;
+            this.PivotY = PivotY;
+            this.TotalRotateTimes = TotalRotateTimes;
+            AnglePerTime = targetRotateAngle / this.TotalRotateTimes;
+            AccumulativeRotateTimes = 0;
+            AccumulativeRotateAngles = 0.0f;
+
+        }
+
+        @Override
+        public void run() {
+            mScaleMatrix.postRotate(AnglePerTime, PivotX, PivotY);
+            setImageMatrix(mScaleMatrix);
+            AccumulativeRotateTimes++;
+            AccumulativeRotateAngles += AnglePerTime;
+
+
+            if(AccumulativeRotateTimes < TotalRotateTimes)
+                postDelayed(this, 16);
+            else{
+                mScaleMatrix.postRotate(targetRotateAngle - AccumulativeRotateAngles, PivotX, PivotY);
+                checkBorderAndCenterWhenScale();
+                setImageMatrix(mScaleMatrix);
+                isAutoRotate = false;
+            }
+
 
         }
     }

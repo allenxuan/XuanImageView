@@ -11,6 +11,7 @@ public class RotationGestureDetector {
     private float fX, fY, sX, sY;
     private int ptrID1, ptrID2;
     private float mAngle;
+    private float mPreviousAngle;
     private float mPivotX;
     private float mPivotY;
 
@@ -21,6 +22,10 @@ public class RotationGestureDetector {
         return mAngle;
     }
 
+    public float getPreviousAngle(){
+        return  mPreviousAngle;
+    }
+
     public float getPivotX(){
         return mPivotX;
     }
@@ -29,11 +34,19 @@ public class RotationGestureDetector {
         return mPivotY;
     }
 
+    public boolean canStillRotate() {
+        if((ptrID1 != INVALID_POINTER_ID) && (ptrID2 != INVALID_POINTER_ID))
+            return true;
+        else
+            return false;
+    }
+
     public RotationGestureDetector(OnRotationGestureListener listener){
         mListener = listener;
         ptrID1 = INVALID_POINTER_ID;
         ptrID2 = INVALID_POINTER_ID;
         mAngle = 0;
+        mPreviousAngle = 0;
         mPivotX = 0;
         mPivotY = 0;
     }
@@ -64,15 +77,12 @@ public class RotationGestureDetector {
                     mPivotX = (nsX + nfX) / 2.0f;
                     mPivotY = (nsY + nfY) / 2.0f;
 
+                    mPreviousAngle = mAngle;
                     mAngle = angleBetweenLines(fX, fY, sX, sY, nfX, nfY, nsX, nsY);
 
 
                     if (mListener != null) {
-                        mListener.OnRotation(this);
-                        sX = nsX;
-                        sY = nsY;
-                        fX = nfX;
-                        fY = nfY;
+                        mListener.OnRotate(this);
                     }
                 }
                 break;
@@ -81,6 +91,9 @@ public class RotationGestureDetector {
                 break;
             case MotionEvent.ACTION_POINTER_UP:
                 ptrID2 = INVALID_POINTER_ID;
+                if(mListener != null){
+                    mListener.StopRotate(this);
+                }
                 break;
             case MotionEvent.ACTION_CANCEL:
                 ptrID1 = INVALID_POINTER_ID;
@@ -96,13 +109,14 @@ public class RotationGestureDetector {
         float angle2 = (float) Math.atan2( (nfY - nsY), (nfX - nsX) );
 
         //角度范围[-180度, +180度]
-        float angle = ((float)Math.toDegrees(angle1 - angle2)) % 360;
+        float angle = ((float)Math.toDegrees(angle2 - angle1)) % 360;
         if (angle < -180.f) angle += 360.0f;
         if (angle > 180.f) angle -= 360.0f;
         return angle;
     }
 
     public static interface OnRotationGestureListener {
-        public void OnRotation(RotationGestureDetector rotationDetector);
+        public boolean OnRotate(RotationGestureDetector rotationDetector);
+        public boolean StopRotate(RotationGestureDetector rotationGestureDetector);
     }
 }

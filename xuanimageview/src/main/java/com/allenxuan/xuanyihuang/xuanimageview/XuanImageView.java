@@ -409,7 +409,10 @@ public class XuanImageView extends ImageView
         else
             ReverseReverseAngle = mAngle;
         ReverseAngle = -ReverseReverseAngle;
-        postDelayed(new AutoRotateRunnable(ReverseAngle, rotationGestureDetector.getPivotX(), rotationGestureDetector.getPivotY(), 40), 16);
+        postDelayed(new AutoRotateRunnable(ReverseAngle, rotationGestureDetector.getPivotX(), rotationGestureDetector.getPivotY(), 10), 16);
+
+        rotationGestureDetector.setAngle(0.0f);
+        rotationGestureDetector.setmPreviousAngle(0.0f);
 
         return true;
     }

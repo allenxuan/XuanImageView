@@ -34,6 +34,14 @@ public class RotationGestureDetector {
         return mPivotY;
     }
 
+    public void setAngle(float angle){
+        mAngle = 0;
+    }
+
+    public void setmPreviousAngle(float angle){
+        mPreviousAngle = 0;
+    }
+
     public boolean canStillRotate() {
         if((ptrID1 != INVALID_POINTER_ID) && (ptrID2 != INVALID_POINTER_ID))
             return true;

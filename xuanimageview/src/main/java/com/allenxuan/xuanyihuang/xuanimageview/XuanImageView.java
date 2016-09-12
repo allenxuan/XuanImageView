@@ -99,11 +99,9 @@ public class XuanImageView extends ImageView
         getViewTreeObserver().addOnGlobalLayoutListener(this);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-//        getViewTreeObserver().removeOnGlobalLayoutListener(this);
         getViewTreeObserver().removeGlobalOnLayoutListener(this);
     }
 
@@ -174,7 +172,6 @@ public class XuanImageView extends ImageView
          *  return ture;
          */
         mRotateGestureDetector.onTouchEvent(motionEvent);
-
 
         //pointerCount不可能为0
         int pointerCount = motionEvent.getPointerCount();
@@ -248,7 +245,6 @@ public class XuanImageView extends ImageView
             case MotionEvent.ACTION_CANCEL:
                 mLastPointerCount = 0;
         }
-
 
 
         return true;

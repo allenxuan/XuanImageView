@@ -535,8 +535,6 @@ public class XuanImageView extends ImageView
         float AccumulativeRotateAngles;
         float initScaleLevel;
         double ScalePerTime;
-        boolean calulateCenterCoordinateDiffFlag;
-
 
         public AutoRotateRunnable(float targetRotateAngle, float initScaleLevel, long TotalRotateTimes) {
             this.targetRotateAngle = targetRotateAngle;
@@ -546,7 +544,6 @@ public class XuanImageView extends ImageView
             AccumulativeRotateAngles = 0.0f;
             this.initScaleLevel = initScaleLevel;
             ScalePerTime = Math.pow(mInitScale/initScaleLevel, 1.0/TotalRotateTimes);
-            calulateCenterCoordinateDiffFlag = false;
         }
 
         @Override

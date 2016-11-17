@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -111,8 +112,8 @@ public class XuanImageView extends ImageView
         allowablePixelError = 1;
         currentScaleLevel = 1;
         autoRotationRunnableDelay = 10;
-//        autoRotationRunnableTimes = 10;
-        autoRotationRunnableTimes = 500;
+        autoRotationRunnableTimes = 10;
+//        autoRotationRunnableTimes = 500;  //for Debug
         doubleTabScaleRunnableDelay = 10;
         mSpringBackGradientScaleUpLevel = 1.01f;
         mSpringBackGradientScaleDownLevel = 0.99f;
@@ -440,8 +441,8 @@ public class XuanImageView extends ImageView
 
     private boolean calculateImageCenterCoordinates(){
         RectF rectF = getMatrixRectF();
-        XuanImageViewCenterX = (int)((rectF.left + rectF.right) / 2);
-        XuanImageViewCenterY = (int)((rectF.top + rectF.bottom) / 2);
+        ImageCenterX = (int)((rectF.left + rectF.right) / 2);
+        ImageCenterY = (int)((rectF.top + rectF.bottom) / 2);
 
         return true;
     }
@@ -473,7 +474,7 @@ public class XuanImageView extends ImageView
         else
             autoScaleAngle = -mAngle;
 
-        postDelayed(new AutoRotateRunnable(autoScaleAngle, getCurrentScaleLevel() / (float)Math.cos(Math.toRadians(mAngle)),rotationGestureDetector.getPivotX(), rotationGestureDetector.getPivotY(), autoRotationRunnableTimes), autoRotationRunnableDelay);
+        postDelayed(new AutoRotateRunnable(autoScaleAngle, getCurrentScaleLevel() / (float)Math.cos(Math.toRadians(mAngle)), autoRotationRunnableTimes), autoRotationRunnableDelay);
         isAutoRotated = true;
 
         rotationGestureDetector.setAngle(0.0f);
@@ -528,31 +529,33 @@ public class XuanImageView extends ImageView
 
     private class AutoRotateRunnable implements Runnable {
         float targetRotateAngle;
-        float PivotX;
-        float PivotY;
         long TotalRotateTimes;
         float AnglePerTime;
         float AccumulativeRotateTimes;
         float AccumulativeRotateAngles;
         float initScaleLevel;
         double ScalePerTime;
+        boolean calulateCenterCoordinateDiffFlag;
 
-        public AutoRotateRunnable(float targetRotateAngle, float initScaleLevel, float PivotX, float PivotY, long TotalRotateTimes) {
+
+        public AutoRotateRunnable(float targetRotateAngle, float initScaleLevel, long TotalRotateTimes) {
             this.targetRotateAngle = targetRotateAngle;
-            this.PivotX = PivotX;
-            this.PivotY = PivotY;
             this.TotalRotateTimes = TotalRotateTimes;
             AnglePerTime = targetRotateAngle / this.TotalRotateTimes;
             AccumulativeRotateTimes = 0;
             AccumulativeRotateAngles = 0.0f;
             this.initScaleLevel = initScaleLevel;
             ScalePerTime = Math.pow(mInitScale/initScaleLevel, 1.0/TotalRotateTimes);
+            calulateCenterCoordinateDiffFlag = false;
         }
 
         @Override
         public void run() {
-            mScaleMatrix.postRotate(AnglePerTime, PivotX, PivotY);
-            mScaleMatrix.postScale((float)ScalePerTime, (float)ScalePerTime, PivotY, PivotY);
+            calculateImageCenterCoordinates();
+
+            mScaleMatrix.postRotate(AnglePerTime, ImageCenterX, ImageCenterY);
+            mScaleMatrix.postScale((float)ScalePerTime, (float)ScalePerTime, ImageCenterX, ImageCenterY);
+            mScaleMatrix.postTranslate((XuanImageViewCenterX - ImageCenterX) / (TotalRotateTimes - AccumulativeRotateTimes), (XuanImageViewCenterY - ImageCenterY) / (TotalRotateTimes - AccumulativeRotateTimes));
             setImageMatrix(mScaleMatrix);
             AccumulativeRotateTimes++;
             AccumulativeRotateAngles += AnglePerTime;
@@ -562,9 +565,11 @@ public class XuanImageView extends ImageView
                 postDelayed(this, autoRotationRunnableDelay);
             }
             else{
-                mScaleMatrix.postRotate(targetRotateAngle - AccumulativeRotateAngles, PivotX, PivotY);
-                mScaleMatrix.postScale(mInitScale / getCurrentScaleLevel(), mInitScale / getCurrentScaleLevel(), PivotX, PivotY);
-//                checkBorderAndCenterWhenScale();
+                calculateImageCenterCoordinates();
+                mScaleMatrix.postRotate(targetRotateAngle - AccumulativeRotateAngles, ImageCenterX, ImageCenterY);
+                mScaleMatrix.postScale(mInitScale / getCurrentScaleLevel(), mInitScale / getCurrentScaleLevel(), ImageCenterX, ImageCenterY);
+                mScaleMatrix.postTranslate(XuanImageViewCenterX - ImageCenterX, XuanImageViewCenterY - ImageCenterY);
+                checkBorderAndCenterWhenScale();
                 setImageMatrix(mScaleMatrix);
                 isAutoRotated = false;
             }

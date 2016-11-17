@@ -1,5 +1,6 @@
 package com.allenxuan.xuanyihuang.xuanimageview.GestureDetectors;
 
+import android.util.Log;
 import android.view.MotionEvent;
 
 /**
@@ -8,12 +9,16 @@ import android.view.MotionEvent;
 
 public class RotationGestureDetector {
     private static final int INVALID_POINTER_ID = -1;
-    private float fX, fY, sX, sY;
+    private float sX, sY, fX, fY;
+    private float nfX, nfY, nsX, nsY;
     private int ptrID1, ptrID2;
+    private int ptrID1_Index, ptrID2_Index, ptr_Index;
     private float mAngle;
     private float mPreviousAngle;
     private float mPivotX;
     private float mPivotY;
+    private boolean mIsRotated;
+    private int mPointerCount;
 
 
     private OnRotationGestureListener mListener;
@@ -35,12 +40,17 @@ public class RotationGestureDetector {
     }
 
     public void setAngle(float angle){
-        mAngle = 0;
+        mAngle = angle;
     }
 
     public void setmPreviousAngle(float angle){
-        mPreviousAngle = 0;
+        mPreviousAngle = angle;
     }
+
+    public boolean IsRotated(){
+        return  mIsRotated;
+    }
+
 
     public boolean canStillRotate() {
         if((ptrID1 != INVALID_POINTER_ID) && (ptrID2 != INVALID_POINTER_ID))
@@ -53,35 +63,44 @@ public class RotationGestureDetector {
         mListener = listener;
         ptrID1 = INVALID_POINTER_ID;
         ptrID2 = INVALID_POINTER_ID;
+        ptrID1_Index = INVALID_POINTER_ID;
+        ptrID2_Index = INVALID_POINTER_ID;
+        ptr_Index = INVALID_POINTER_ID;
         mAngle = 0;
         mPreviousAngle = 0;
         mPivotX = 0;
         mPivotY = 0;
+        mIsRotated = false;
+        mPointerCount = 0;
     }
 
     public boolean onTouchEvent(MotionEvent event){
-        switch (event.getActionMasked()) {
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 //第一个手指按下
                 ptrID1 = event.getPointerId(event.getActionIndex());
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 //第二个,第三个,第四个,第n个手指按下均执行,最后一个按下的手指的id保存在ptrID2中
-                ptrID2 = event.getPointerId(event.getActionIndex());
-                sX = event.getX(event.findPointerIndex(ptrID1));
-                sY = event.getY(event.findPointerIndex(ptrID1));
-                fX = event.getX(event.findPointerIndex(ptrID2));
-                fY = event.getY(event.findPointerIndex(ptrID2));
-                mPivotX = (sX + fX) / 2.0f;
-                mPivotY = (sY + fY) / 2.0f;
+                mPointerCount = event.getPointerCount();
+                if(mPointerCount == 2) {
+                    ptrID2 = event.getPointerId(event.getActionIndex());
+                    ptrID1_Index = event.findPointerIndex(ptrID1);
+                    ptrID2_Index = event.findPointerIndex(ptrID2);
+                    sX = event.getX(ptrID1_Index);
+                    sY = event.getY(ptrID1_Index);
+                    fX = event.getX(ptrID2_Index);
+                    fY = event.getY(ptrID2_Index);
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
                 if(ptrID1 != INVALID_POINTER_ID && ptrID2 != INVALID_POINTER_ID){
-                    float nfX, nfY, nsX, nsY;
-                    nsX = event.getX(event.findPointerIndex(ptrID1));
-                    nsY = event.getY(event.findPointerIndex(ptrID1));
-                    nfX = event.getX(event.findPointerIndex(ptrID2));
-                    nfY = event.getY(event.findPointerIndex(ptrID2));
+                    ptrID1_Index = event.findPointerIndex(ptrID1);
+                    ptrID2_Index = event.findPointerIndex(ptrID2);
+                    nsX = event.getX(ptrID1_Index);
+                    nsY = event.getY(ptrID1_Index);
+                    nfX = event.getX(ptrID2_Index);
+                    nfY = event.getY(ptrID2_Index);
                     mPivotX = (nsX + nfX) / 2.0f;
                     mPivotY = (nsY + nfY) / 2.0f;
 
@@ -91,16 +110,23 @@ public class RotationGestureDetector {
 
                     if (mListener != null) {
                         mListener.OnRotate(this);
+                        mIsRotated = true;
                     }
                 }
                 break;
             case MotionEvent.ACTION_UP:
                 ptrID1 = INVALID_POINTER_ID;
+                ptrID2 = INVALID_POINTER_ID;
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-                ptrID2 = INVALID_POINTER_ID;
-                if(mListener != null){
-                    mListener.StopRotate(this);
+                ptr_Index = event.getActionIndex();
+                if(ptrID1 == event.getPointerId(ptr_Index) || ptrID2 == event.getPointerId(ptr_Index)){
+                    ptrID1 = INVALID_POINTER_ID;
+                    ptrID2 = INVALID_POINTER_ID;
+                    if(mListener != null){
+                        mListener.StopRotate(this);
+                        mIsRotated = false;
+                    }
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
@@ -108,6 +134,7 @@ public class RotationGestureDetector {
                 ptrID2 = INVALID_POINTER_ID;
                 break;
         }
+
         return true;
     }
 
@@ -120,11 +147,15 @@ public class RotationGestureDetector {
         float angle = ((float)Math.toDegrees(angle2 - angle1)) % 360;
         if (angle < -180.f) angle += 360.0f;
         if (angle > 180.f) angle -= 360.0f;
+
+        Log.d("angleBetweenLines","" + angle);
         return angle;
     }
 
+
+
     public static interface OnRotationGestureListener {
-        public boolean OnRotate(RotationGestureDetector rotationDetector);
-        public boolean StopRotate(RotationGestureDetector rotationGestureDetector);
+        public abstract boolean OnRotate(RotationGestureDetector rotationGestureDetector);
+        public abstract boolean StopRotate(RotationGestureDetector rotationGestureDetector);
     }
 }

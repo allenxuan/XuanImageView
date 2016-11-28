@@ -114,7 +114,7 @@ public class RotationGestureDetector {
                     mAngleAtPresent = angleBetweenLines(fX, fY, sX, sY, nfX, nfY, nsX, nsY);
 
                     if (mListener != null) {
-                        if(Math.abs(mAngleAtPresent) >= mRotationTrigger) {
+                        if(Math.abs(mAngleAtPresent) >= mRotationTrigger || mIsRotated) {
                             mPreviousAngle = mAngle;
                             mAngle = mAngleAtPresent;
                             mListener.OnRotate(this);

@@ -14,12 +14,13 @@ public class RotationGestureDetector {
     private int ptrID1, ptrID2;
     private int ptrID1_Index, ptrID2_Index, ptr_Index;
     private float mAngle;
+    private float mAngleAtPresent;
     private float mPreviousAngle;
     private float mPivotX;
     private float mPivotY;
     private boolean mIsRotated;
     private int mPointerCount;
-
+    private float mRotationTrigger;
 
     private OnRotationGestureListener mListener;
 
@@ -51,6 +52,11 @@ public class RotationGestureDetector {
         return  mIsRotated;
     }
 
+    public void invalidateTouchPointers(){
+        ptrID1 = INVALID_POINTER_ID;
+        ptrID2 = INVALID_POINTER_ID;
+    }
+
 
     public boolean canStillRotate() {
         if((ptrID1 != INVALID_POINTER_ID) && (ptrID2 != INVALID_POINTER_ID))
@@ -72,6 +78,7 @@ public class RotationGestureDetector {
         mPivotY = 0;
         mIsRotated = false;
         mPointerCount = 0;
+        mRotationTrigger = 15;
     }
 
     public boolean onTouchEvent(MotionEvent event){
@@ -104,13 +111,15 @@ public class RotationGestureDetector {
                     mPivotX = (nsX + nfX) / 2.0f;
                     mPivotY = (nsY + nfY) / 2.0f;
 
-                    mPreviousAngle = mAngle;
-                    mAngle = angleBetweenLines(fX, fY, sX, sY, nfX, nfY, nsX, nsY);
-
+                    mAngleAtPresent = angleBetweenLines(fX, fY, sX, sY, nfX, nfY, nsX, nsY);
 
                     if (mListener != null) {
-                        mListener.OnRotate(this);
-                        mIsRotated = true;
+                        if(Math.abs(mAngleAtPresent) >= mRotationTrigger) {
+                            mPreviousAngle = mAngle;
+                            mAngle = mAngleAtPresent;
+                            mListener.OnRotate(this);
+                            mIsRotated = true;
+                        }
                     }
                 }
                 break;
@@ -124,8 +133,10 @@ public class RotationGestureDetector {
                     ptrID1 = INVALID_POINTER_ID;
                     ptrID2 = INVALID_POINTER_ID;
                     if(mListener != null){
-                        mListener.StopRotate(this);
-                        mIsRotated = false;
+                        if(mIsRotated) {
+                            mListener.StopRotate(this);
+                            mIsRotated = false;
+                        }
                     }
                 }
                 break;

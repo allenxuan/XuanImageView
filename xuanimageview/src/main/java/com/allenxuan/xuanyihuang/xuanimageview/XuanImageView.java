@@ -277,6 +277,8 @@ public class XuanImageView extends ImageView
             case MotionEvent.ACTION_POINTER_UP:
                 //多点触控时,有一个手指松开
                 if(pointerCount -1 < 2){
+//                    mRotateGestureDetector.invalidateTouchPointers();
+
                     //回弹至mInitScale或mMaxScale
                     if((currentScaleLevel < mInitScale) && !isAutoRotated){
                         postDelayed(new AutoScaleRunnable(mInitScale, mLastScaleFocusX, mLastScaleFocusY, mSpringBackGradientScaleUpLevel, mSpringBackGradientScaleDownLevel), 16);
@@ -290,6 +292,7 @@ public class XuanImageView extends ImageView
                 break;
             case MotionEvent.ACTION_UP:
                 mLastPointerCount = 0;
+                mRotateGestureDetector.onTouchEvent(motionEvent);
                 break;
             case MotionEvent.ACTION_CANCEL:
                 mLastPointerCount = 0;

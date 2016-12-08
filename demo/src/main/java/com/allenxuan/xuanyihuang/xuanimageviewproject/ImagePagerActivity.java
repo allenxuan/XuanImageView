@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 import com.allenxuan.xuanyihuang.xuanimageview.XuanImageView;
 
 public class ImagePagerActivity extends AppCompatActivity {
-    private int[] images = new int[]{R.drawable.wallpaper1, R.drawable.wallpaper2, R.drawable.wallpaper3};
+    private int[] images = new int[]{R.drawable.wallpaper1, R.drawable.wallpaper2, R.drawable.wallpaper3, R.drawable.wallpaper4};
     private XuanImageView[] mXuanImageViews = new XuanImageView[images.length];
     private ViewPager mViewPager;
     @Override

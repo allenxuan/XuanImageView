@@ -56,6 +56,7 @@ public class XuanImageView extends ImageView
     private boolean canStillRotate;
     private boolean isAutoRotated;
     private int allowablePixelError;
+    private double allowableFloatError;
     private float currentScaleLevel;
     private long autoRotationRunnableDelay;
     private long autoRotationRunnableTimes;
@@ -105,11 +106,11 @@ public class XuanImageView extends ImageView
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         isDrag = false;
         mLastPointerCount = 0;
-        mRotateGestureDetector = new RotationGestureDetector(this);
         mAngle = 0;
         mPreviousAngle = 0;
         mImageLoadedFirstTime = false;
         allowablePixelError = 1;
+        allowableFloatError = 1E-6;
         currentScaleLevel = 1;
         autoRotationRunnableDelay = 10;
         autoRotationRunnableTimes = 10;
@@ -143,6 +144,8 @@ public class XuanImageView extends ImageView
              //得到控件宽高
             XuanImageViewWidth = getWidth();
             XuanImageViewHeight = getHeight();
+
+            mRotateGestureDetector = new RotationGestureDetector(this, XuanImageViewWidth);
 
             //get the center point of XuanImageView
             XuanImageViewCenterX = XuanImageViewWidth / 2;
@@ -214,7 +217,9 @@ public class XuanImageView extends ImageView
 //            isRotated = mRotateGestureDetector.IsRotated();
 //        }
 
-        if(mRotateGestureDetector.IsRotated() || currentScaleLevel == mInitScale){
+        Log.d("开始currentScaleLevel",""+currentScaleLevel);
+        Log.d("结束mInitScale",""+mInitScale);
+        if(mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError){
             mRotateGestureDetector.onTouchEvent(motionEvent);
         }
 
@@ -253,23 +258,21 @@ public class XuanImageView extends ImageView
                         getParent().requestDisallowInterceptTouchEvent(true);
                 float deltaX = pivotX - mLastX;
                 float deltaY = pivotY - mLastY;
-                if(!isDrag)
-                    isDrag = isMoveAction(deltaX, deltaY);
-                if(isDrag){
-                    if(getDrawable() != null){
-                        if(!mRotateGestureDetector.IsRotated()) {
-                            if (rectF.width() < XuanImageViewWidth)
-                                deltaX = 0;
-                            if (rectF.height() < XuanImageViewHeight)
-                                deltaY = 0;
-                        }
 
-                        mScaleMatrix.postTranslate(deltaX, deltaY);
+                isDrag = true;
 
-                        if(!mRotateGestureDetector.IsRotated())
-                            checkBorderAndCenterWhenTranslate();
-                        setImageMatrix(mScaleMatrix);
+                if(getDrawable() != null){
+                    if(!mRotateGestureDetector.IsRotated()) {
+                        if (rectF.width() < XuanImageViewWidth)
+                            deltaX = 0;
+                        if (rectF.height() < XuanImageViewHeight)
+                            deltaY = 0;
                     }
+                    mScaleMatrix.postTranslate(deltaX, deltaY);
+
+                    if(!mRotateGestureDetector.IsRotated())
+                        checkBorderAndCenterWhenTranslate();
+                    setImageMatrix(mScaleMatrix);
                 }
                 mLastX = pivotX;
                 mLastY = pivotY;
@@ -326,10 +329,14 @@ public class XuanImageView extends ImageView
              * 若图片当前的缩放水平大于mMaxScale, 继续尝试放大手势时,不符合if条件,则不会进行任何变换。
              *
              */
-            mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
 
-            if(!mRotateGestureDetector.IsRotated())
+
+            if(!mRotateGestureDetector.IsRotated()) {
+                mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
                 checkBorderAndCenterWhenScale();
+            }else{
+                mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
+            }
 
             setImageMatrix(mScaleMatrix);
             mLastScaleFocusX = scaleGestureDetector.getFocusX();
@@ -517,7 +524,7 @@ public class XuanImageView extends ImageView
                 postDelayed(this,16);
             }
             else{
-                scaleFacotr = targetScale / currentScaleLevel;
+                scaleFacotr = targetScale/ currentScaleLevel;
 
                 mScaleMatrix.postScale(scaleFacotr, scaleFacotr, FocusX, FocusY);
                 checkBorderAndCenterWhenScale();
@@ -576,10 +583,6 @@ public class XuanImageView extends ImageView
 
 
         }
-    }
-
-    private  boolean isMoveAction(float dx, float dy){
-        return Math.sqrt(dx * dx + dy * dy) > mTouchSlop;
     }
 
     public void setAutoRotationRunnableDelay(long delay){

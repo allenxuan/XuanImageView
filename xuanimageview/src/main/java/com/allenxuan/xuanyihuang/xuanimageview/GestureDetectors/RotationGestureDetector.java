@@ -3,8 +3,6 @@ package com.allenxuan.xuanyihuang.xuanimageview.GestureDetectors;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import com.allenxuan.xuanyihuang.xuanimageview.XuanImageView;
-
 /**
  * Created by xuanyihuang on 9/4/16.
  */
@@ -48,25 +46,12 @@ public class RotationGestureDetector {
         mAngle = angle;
     }
 
-    public void setmPreviousAngle(float angle){
+    public void setPreviousAngle(float angle){
         mPreviousAngle = angle;
     }
 
     public boolean IsRotated(){
         return  mIsRotated;
-    }
-
-    public void invalidateTouchPointers(){
-        ptrID1 = INVALID_POINTER_ID;
-        ptrID2 = INVALID_POINTER_ID;
-    }
-
-
-    public boolean canStillRotate() {
-        if((ptrID1 != INVALID_POINTER_ID) && (ptrID2 != INVALID_POINTER_ID))
-            return true;
-        else
-            return false;
     }
 
     public RotationGestureDetector(OnRotationGestureListener listener, int XuanImageViewWidth){
@@ -83,18 +68,18 @@ public class RotationGestureDetector {
         mPivotY = 0;
         mIsRotated = false;
         mPointerCount = 0;
-        mBasicRotationTrigger = 10;
+        mBasicRotationTrigger = 10; //basic rotation trigger : 10 degrees
         mRotationTrigger = mBasicRotationTrigger;
     }
 
     public boolean onTouchEvent(MotionEvent event){
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
-                //第一个手指按下
+                //ptrID1 : first finger pressing down
                 ptrID1 = event.getPointerId(event.getActionIndex());
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
-                //第二个按下的手指的id保存在ptrID2中
+                //ptrID2: second finger pressing down
                 mPointerCount = event.getPointerCount();
                 if(mPointerCount == 2) {
                     ptrID2 = event.getPointerId(event.getActionIndex());
@@ -105,12 +90,7 @@ public class RotationGestureDetector {
                         sY = event.getY(ptrID1_Index);
                         fX = event.getX(ptrID2_Index);
                         fY = event.getY(ptrID2_Index);
-
-                        if(lineDistance(fX,fY,sX,sY) <= (mXuanImageViewWith / 3)){
-                            mRotationTrigger = mBasicRotationTrigger * 2;
-                        }
-                        else
-                            mRotationTrigger = mBasicRotationTrigger;
+                        determineRotationTrigger();
                     }catch(Exception e){
                         //pointer index out of range exception
                         return true;
@@ -118,7 +98,7 @@ public class RotationGestureDetector {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if(ptrID1 != INVALID_POINTER_ID && ptrID2 != INVALID_POINTER_ID){
+                if(canStillRotate()){
                     ptrID1_Index = event.findPointerIndex(ptrID1);
                     ptrID2_Index = event.findPointerIndex(ptrID2);
                     try {
@@ -154,14 +134,12 @@ public class RotationGestureDetector {
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                ptrID1 = INVALID_POINTER_ID;
-                ptrID2 = INVALID_POINTER_ID;
+                invalidateTouchPointers();
                 break;
             case MotionEvent.ACTION_POINTER_UP:
                 ptr_Index = event.getActionIndex();
                 if(ptrID1 == event.getPointerId(ptr_Index) || ptrID2 == event.getPointerId(ptr_Index)){
-                    ptrID1 = INVALID_POINTER_ID;
-                    ptrID2 = INVALID_POINTER_ID;
+                    invalidateTouchPointers();
                     if(mListener != null){
                         if(mIsRotated) {
                             mListener.StopRotate(this);
@@ -169,28 +147,22 @@ public class RotationGestureDetector {
                         }
                     }
                 }
-//                if(event.getPointerId(ptr_Index) == ptrID1){
-//                    ptrID1 = INVALID_POINTER_ID;
-//                    if(mListener != null && mIsRotated){
-//                        mListener.StopRotate(this);
-//                        mIsRotated = false;
-//                    }
-//                }
-//                else if(event.getPointerId(ptr_Index) == ptrID2){
-//                    ptrID2 = INVALID_POINTER_ID;
-//                    if(mListener != null && mIsRotated){
-//                        mListener.StopRotate(this);
-//                        mIsRotated = false;
-//                    }
-//                }
                 break;
             case MotionEvent.ACTION_CANCEL:
-                ptrID1 = INVALID_POINTER_ID;
-                ptrID2 = INVALID_POINTER_ID;
+                invalidateTouchPointers();
                 break;
         }
 
         return true;
+    }
+
+    private boolean canStillRotate() {
+        return (ptrID1 != INVALID_POINTER_ID) && (ptrID2 != INVALID_POINTER_ID) ;
+    }
+
+    private void invalidateTouchPointers(){
+        ptrID1 = INVALID_POINTER_ID;
+        ptrID2 = INVALID_POINTER_ID;
     }
 
     private float angleBetweenLines (float fX, float fY, float sX, float sY, float nfX, float nfY, float nsX, float nsY)
@@ -198,7 +170,7 @@ public class RotationGestureDetector {
         float angle1 = (float) Math.atan2( (fY - sY), (fX - sX) );
         float angle2 = (float) Math.atan2( (nfY - nsY), (nfX - nsX) );
 
-        //角度范围[-180度, +180度]
+        //angle range: [-180 degrees, +180 degrees]
         float angle = ((float)Math.toDegrees(angle2 - angle1)) % 360;
         if (angle < -180.f) angle += 360.0f;
         if (angle > 180.f) angle -= 360.0f;
@@ -211,9 +183,17 @@ public class RotationGestureDetector {
         return  Math.sqrt((fX - sX) * (fX - sX) + (fY - sY) * (fY - sY));
     }
 
+    private void determineRotationTrigger(){
+        // need further optimization
+        if(lineDistance(fX,fY,sX,sY) <= (mXuanImageViewWith / 3)){
+            mRotationTrigger = mBasicRotationTrigger * 2;
+        }
+        else
+            mRotationTrigger = mBasicRotationTrigger;
+    }
 
-    public static interface OnRotationGestureListener {
-        public abstract boolean OnRotate(RotationGestureDetector rotationGestureDetector);
-        public abstract boolean StopRotate(RotationGestureDetector rotationGestureDetector);
+    public interface OnRotationGestureListener {
+        boolean OnRotate(RotationGestureDetector rotationGestureDetector);
+        boolean StopRotate(RotationGestureDetector rotationGestureDetector);
     }
 }

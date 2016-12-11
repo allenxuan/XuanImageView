@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -12,7 +11,6 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
@@ -23,7 +21,10 @@ import com.allenxuan.xuanyihuang.xuanimageview.GestureDetectors.RotationGestureD
  */
 
 public class XuanImageView extends ImageView
-        implements ViewTreeObserver.OnGlobalLayoutListener,View.OnTouchListener,ScaleGestureDetector.OnScaleGestureListener, RotationGestureDetector.OnRotationGestureListener{
+        implements ViewTreeObserver.OnGlobalLayoutListener,
+                    View.OnTouchListener,
+                    ScaleGestureDetector.OnScaleGestureListener,
+                    RotationGestureDetector.OnRotationGestureListener{
     private int XuanImageViewWidth;
     private int XuanImageViewHeight;
     private int XuanImageViewCenterX;
@@ -75,6 +76,7 @@ public class XuanImageView extends ImageView
 
         mScaleMatrix= new Matrix();
         setScaleType(ScaleType.MATRIX);
+
         mScaleGestureDetector = new ScaleGestureDetector(context, this);
         setOnTouchListener(this);
         mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener(){

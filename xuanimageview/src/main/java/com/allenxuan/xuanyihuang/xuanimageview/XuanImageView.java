@@ -217,8 +217,8 @@ public class XuanImageView extends ImageView
 //            isRotated = mRotateGestureDetector.IsRotated();
 //        }
 
-        Log.d("开始currentScaleLevel",""+currentScaleLevel);
-        Log.d("结束mInitScale",""+mInitScale);
+//        Log.d("开始currentScaleLevel",""+currentScaleLevel);
+//        Log.d("结束mInitScale",""+mInitScale);
         if(mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError){
             mRotateGestureDetector.onTouchEvent(motionEvent);
         }
@@ -248,12 +248,23 @@ public class XuanImageView extends ImageView
         RectF rectF = getMatrixRectF();
         switch (motionEvent.getAction() & MotionEvent.ACTION_MASK){
             case MotionEvent.ACTION_DOWN:
-                if((rectF.width() - XuanImageViewWidth > allowablePixelError )|| (rectF.height() - XuanImageViewHeight > allowablePixelError))
+//                if((rectF.width() - XuanImageViewWidth > allowablePixelError )|| (rectF.height() - XuanImageViewHeight > allowablePixelError))
+//                    if(getParent() != null)
+//                        getParent().requestDisallowInterceptTouchEvent(true);
+                currentScaleLevel = getCurrentScaleLevel();
+                if(Math.abs(currentScaleLevel - mInitScale) >= allowableFloatError)
                     if(getParent() != null)
                         getParent().requestDisallowInterceptTouchEvent(true);
                 break;
             case MotionEvent.ACTION_MOVE:
-                if((rectF.width() - XuanImageViewWidth > allowablePixelError )|| (rectF.height() - XuanImageViewHeight > allowablePixelError))
+//                Log.d("rectWidth-ViewWidt","" + ((rectF.width() - XuanImageViewWidth)) );
+//                if((rectF.width() - XuanImageViewWidth > allowablePixelError )|| (rectF.height() - XuanImageViewHeight > allowablePixelError))
+//                    if(getParent() != null)
+//                        getParent().requestDisallowInterceptTouchEvent(true);
+                Log.d("MOVE开始currentScaleLevel",""+currentScaleLevel);
+                Log.d("MOVE结束mInitScale",""+mInitScale);
+                currentScaleLevel = getCurrentScaleLevel();
+                if(Math.abs(currentScaleLevel - mInitScale) >= allowableFloatError)
                     if(getParent() != null)
                         getParent().requestDisallowInterceptTouchEvent(true);
                 float deltaX = pivotX - mLastX;
@@ -488,7 +499,7 @@ public class XuanImageView extends ImageView
         isAutoRotated = true;
 
         rotationGestureDetector.setAngle(0.0f);
-        rotationGestureDetector.setmPreviousAngle(0.0f);
+        rotationGestureDetector.setPreviousAngle(0.0f);
 
         return true;
     }

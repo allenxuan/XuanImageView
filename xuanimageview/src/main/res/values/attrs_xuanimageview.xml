@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="xuanimageview">
+        <attr name="MaxScaleMultiple" format="float"/>
+        <attr name="DoubleTabScaleMultiple" format="float"/>
+        <attr name="SpringBackGradientScaleUpLevel" format="float"/>
+        <attr name="SpringBackGradientScaleDownLevel" format="float"/>
+        <attr name="DoubleTapGradientScaleUpLevel" format="float"/>
+        <attr name="DoubleTapGradientScaleDownLevel" format="float"/>
+        <attr name="AutoRotationTrigger" format="float"/>
+        <attr name="SpringBackRunnableDelay" format="integer"/>
+        <attr name="DoubleTapScaleRunnableDelay" format="integer"/>
+        <attr name="AutoRotationRunnableDelay" format="integer"/>
+        <attr name="AutoRotationRunnableTimes" format="integer"/>
+    </declare-styleable>
+</resources>

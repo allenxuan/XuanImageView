@@ -12,7 +12,8 @@
     <com.allenxuan.xuanyihuang.xuanimageview.XuanImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/wallpaper1"
-        android:scaleType="matrix"/>
+        android:background="@android:color/background_dark"
+        android:scaleType="matrix"
+        android:src="@drawable/wallpaper1" />
 
 </RelativeLayout>

@@ -1,6 +1,7 @@
 package com.allenxuan.xuanyihuang.xuanimageview;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -10,7 +11,6 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
@@ -34,6 +34,8 @@ public class XuanImageView extends ImageView
     private boolean mImageLoadedFirstTime;
     private float mInitScale;
     private float mMaxScale;
+    private float mMaxScaleMultiple;
+    private float mDoubleTabScaleMultiple;
     private float mDoubleTabScale;
     private Matrix mScaleMatrix;
     private ScaleGestureDetector mScaleGestureDetector;
@@ -41,27 +43,24 @@ public class XuanImageView extends ImageView
     private float mLastScaleFocusX;
     private float mLastScaleFocusY;
     private boolean isAutoScale;
-    private boolean isScaling;
     private float mSpringBackGradientScaleUpLevel;
     private float mSpringBackGradientScaleDownLevel;
     private float mDoubleTapGradientScaleUpLevel;
     private float mDoubleTapGradientScaleDownLevel;
-    private float mTouchSlop;
-    private boolean isDrag;
     private int mLastPointerCount;
     private float mLastX;
     private float mLastY;
     private float mAngle;
     private float mPreviousAngle;
     private RotationGestureDetector mRotateGestureDetector;
-    private boolean canStillRotate;
     private boolean isAutoRotated;
-    private int allowablePixelError;
     private double allowableFloatError;
     private float currentScaleLevel;
-    private long autoRotationRunnableDelay;
-    private long autoRotationRunnableTimes;
-    private long doubleTabScaleRunnableDelay;
+    private float autoRotationTrigger;
+    private int autoRotationRunnableDelay;
+    private int autoRotationRunnableTimes;
+    private int doubleTabScaleRunnableDelay;
+    private int springBackRunnableDelay;
 
     public XuanImageView(Context context) {
         this(context, null);
@@ -78,7 +77,6 @@ public class XuanImageView extends ImageView
         setScaleType(ScaleType.MATRIX);
 
         mScaleGestureDetector = new ScaleGestureDetector(context, this);
-        setOnTouchListener(this);
         mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener(){
             @Override
             public boolean onDoubleTap(MotionEvent e) {
@@ -89,7 +87,6 @@ public class XuanImageView extends ImageView
                 if(isAutoScale)
                     return true;
 
-
                 if(currentScaleLevel < mDoubleTabScale){
                     postDelayed(new AutoScaleRunnable(mDoubleTabScale, x, y, mDoubleTapGradientScaleUpLevel, mDoubleTapGradientScaleDownLevel),doubleTabScaleRunnableDelay);
                     isAutoScale = true;
@@ -98,30 +95,36 @@ public class XuanImageView extends ImageView
                     postDelayed(new AutoScaleRunnable(mInitScale, x, y, mDoubleTapGradientScaleUpLevel, mDoubleTapGradientScaleDownLevel),doubleTabScaleRunnableDelay);
                     isAutoScale = true;
                 }
-
                 return true;
             }
         });
 
+        setOnTouchListener(this);
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.xuanimageview);
+        mMaxScaleMultiple = a.getFloat(R.styleable.xuanimageview_MaxScaleMultiple, 4);
+        mDoubleTabScaleMultiple = a.getFloat(R.styleable.xuanimageview_DoubleTabScaleMultiple, 2);
+        mSpringBackGradientScaleUpLevel = a.getFloat(R.styleable.xuanimageview_SpringBackGradientScaleUpLevel, 1.01f);
+        mSpringBackGradientScaleDownLevel = a.getFloat(R.styleable.xuanimageview_SpringBackGradientScaleDownLevel, 0.99f);
+        mDoubleTapGradientScaleUpLevel = a.getFloat(R.styleable.xuanimageview_DoubleTapGradientScaleUpLevel, 1.05f);
+        mDoubleTapGradientScaleDownLevel = a.getFloat(R.styleable.xuanimageview_DoubleTapGradientScaleDownLevel, 0.95f);
+        autoRotationTrigger = a.getFloat(R.styleable.xuanimageview_AutoRotationTrigger, 60);
+        springBackRunnableDelay = a.getInteger(R.styleable.xuanimageview_SpringBackRunnableDelay, 10);
+        doubleTabScaleRunnableDelay = a.getInteger(R.styleable.xuanimageview_DoubleTapScaleRunnableDelay, 10);
+        autoRotationRunnableDelay = a.getInteger(R.styleable.xuanimageview_AutoRotationRunnableDelay, 5);
+        autoRotationRunnableTimes = a.getInteger(R.styleable.xuanimageview_AutoRotationRunnableTimes, 10);
+        a.recycle();
+
+
         isAutoScale = false;
-        isScaling = false;
-        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-        isDrag = false;
         mLastPointerCount = 0;
         mAngle = 0;
         mPreviousAngle = 0;
         mImageLoadedFirstTime = false;
-        allowablePixelError = 1;
         allowableFloatError = 1E-6;
         currentScaleLevel = 1;
-        autoRotationRunnableDelay = 10;
-        autoRotationRunnableTimes = 10;
-//        autoRotationRunnableTimes = 500;  //for Debug
-        doubleTabScaleRunnableDelay = 10;
-        mSpringBackGradientScaleUpLevel = 1.01f;
-        mSpringBackGradientScaleDownLevel = 0.99f;
-        mDoubleTapGradientScaleUpLevel = 1.05f;
-        mDoubleTapGradientScaleDownLevel = 0.95f;
+
+
     }
 
     @Override
@@ -136,54 +139,39 @@ public class XuanImageView extends ImageView
     }
 
     /**
-     * ImageView初次加载图片时,需要图片在控件内居中显示
+     * Image should be centered after XuanImageView is initialized.
      */
     @Override
     public void onGlobalLayout() {
         if(!mImageLoadedFirstTime){
             getViewTreeObserver().removeGlobalOnLayoutListener(this);
 
-             //得到控件宽高
+            // get width and height of XuanImageView
             XuanImageViewWidth = getWidth();
             XuanImageViewHeight = getHeight();
-
-            mRotateGestureDetector = new RotationGestureDetector(this, XuanImageViewWidth);
 
             //get the center point of XuanImageView
             XuanImageViewCenterX = XuanImageViewWidth / 2;
             XuanImageViewCenterY = XuanImageViewHeight / 2;
 
-            //得到图片及其宽高
+            // instantiate mRotationGestureDetector after dimension of XuanImageView is got.
+            mRotateGestureDetector = new RotationGestureDetector(this, XuanImageViewWidth);
+
+            //get width and height of the image
             Drawable imageDrawable = getDrawable();
             if(imageDrawable == null)
                 return;
             int imageWidth = imageDrawable.getIntrinsicWidth();
             int imageHeight = imageDrawable.getIntrinsicHeight();
 
-            //可优化
-//            float scale = 1.0f;
-//            if((imageWidth < width) && (imageHeight < height)){
-//                scale = Math.min(width * 1.0f / imageWidth, height * 1.0f /imageHeight);
-//            }
-//            if((imageWidth > width) && (imageHeight > height)){
-//                scale = Math.min(width * 1.0f / imageWidth, height * 1.0f /imageHeight);
-//            }
-//            if((imageWidth < width) && (imageHeight > height)){
-//                scale = height * 1.0f /imageHeight;
-//            }
-//            if((imageWidth > width) && (imageHeight < height)){
-//                scale = width * 1.0f / imageWidth;
-//            }
-
-            //优化为
+            //image is scaled to fit the size of XuanImageView at the very beginning.
             float scale = Math.min(XuanImageViewWidth * 1.0f / imageWidth, XuanImageViewHeight * 1.0f /imageHeight);
 
-            //设置初始的缩放比例;
             mInitScale = scale;
-            mMaxScale = 4 * scale;
-            mDoubleTabScale = 2* scale;
+            mMaxScale = mMaxScaleMultiple * scale;
+            mDoubleTabScale = mDoubleTabScaleMultiple * scale;
 
-            //图片移至中心位置
+            //center of image overlaps with that of XuanImageView
             int deltaX = XuanImageViewWidth / 2 -imageWidth / 2;
             int deltaY = XuanImageViewHeight / 2 - imageHeight / 2;
 
@@ -203,29 +191,13 @@ public class XuanImageView extends ImageView
 
         // for Scale gesture
         mScaleGestureDetector.onTouchEvent(motionEvent);
-        /**
-         * 不能这么写
-         * if(mScaleGestureDetector.onTouchEvent(motionEvent))
-         *  return ture;
-         */
+
 
         currentScaleLevel = getCurrentScaleLevel();
-
-//        Log.d("isScaling before rotate",""+isScaling);
-//        Log.d("isRotated before rotate", ""+isRotated);
-//        //The image can only be rotated when currentScaleLevel is equal to mInitScale
-//        if((!isScaling) && (isRotated || currentScaleLevel == mInitScale)) {
-//            mRotateGestureDetector.onTouchEvent(motionEvent);
-//            isRotated = mRotateGestureDetector.IsRotated();
-//        }
-
-//        Log.d("开始currentScaleLevel",""+currentScaleLevel);
-//        Log.d("结束mInitScale",""+mInitScale);
         if(mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError){
+            // for Rotation gesture
             mRotateGestureDetector.onTouchEvent(motionEvent);
         }
-
-//        mRotateGestureDetector.onTouchEvent(motionEvent);
 
         //pointerCount won't be 0
         int pointerCount = motionEvent.getPointerCount();
@@ -238,33 +210,23 @@ public class XuanImageView extends ImageView
         pivotX /= pointerCount;   //get integer result of the division
         pivotY /= pointerCount;
 
-
-        //一般拖动图片的时候pointCount == mLastCount,因此,拖动图片时,此处不会保存上一次的状态
+        // when image is being dragged, generally, pointCount == mLastCount holds, so old state is not saved.
         if(pointerCount != mLastPointerCount){
-            isDrag = false;
             mLastX = pivotX;
             mLastY = pivotY;
             mLastPointerCount = pointerCount;
         }
 
         RectF rectF = getMatrixRectF();
+
         switch (motionEvent.getAction() & MotionEvent.ACTION_MASK){
             case MotionEvent.ACTION_DOWN:
-//                if((rectF.width() - XuanImageViewWidth > allowablePixelError )|| (rectF.height() - XuanImageViewHeight > allowablePixelError))
-//                    if(getParent() != null)
-//                        getParent().requestDisallowInterceptTouchEvent(true);
                 currentScaleLevel = getCurrentScaleLevel();
                 if(Math.abs(currentScaleLevel - mInitScale) >= allowableFloatError)
                     if(getParent() != null)
                         getParent().requestDisallowInterceptTouchEvent(true);
                 break;
             case MotionEvent.ACTION_MOVE:
-//                Log.d("rectWidth-ViewWidt","" + ((rectF.width() - XuanImageViewWidth)) );
-//                if((rectF.width() - XuanImageViewWidth > allowablePixelError )|| (rectF.height() - XuanImageViewHeight > allowablePixelError))
-//                    if(getParent() != null)
-//                        getParent().requestDisallowInterceptTouchEvent(true);
-                Log.d("MOVE开始currentScaleLevel",""+currentScaleLevel);
-                Log.d("MOVE结束mInitScale",""+mInitScale);
                 currentScaleLevel = getCurrentScaleLevel();
                 if(Math.abs(currentScaleLevel - mInitScale) >= allowableFloatError)
                     if(getParent() != null)
@@ -272,13 +234,11 @@ public class XuanImageView extends ImageView
                 float deltaX = pivotX - mLastX;
                 float deltaY = pivotY - mLastY;
 
-                isDrag = true;
-
                 if(getDrawable() != null){
                     if(!mRotateGestureDetector.IsRotated()) {
-                        if (rectF.width() < XuanImageViewWidth)
+                        if (rectF.width() <= XuanImageViewWidth)
                             deltaX = 0;
-                        if (rectF.height() < XuanImageViewHeight)
+                        if (rectF.height() <= XuanImageViewHeight)
                             deltaY = 0;
                     }
                     mScaleMatrix.postTranslate(deltaX, deltaY);
@@ -291,24 +251,22 @@ public class XuanImageView extends ImageView
                 mLastY = pivotY;
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-                //多点触控时,有一个手指松开
+                //one finger loosening (multi-touch)
                 if(pointerCount -1 < 2){
-//                    mRotateGestureDetector.invalidateTouchPointers();
 
-                    //回弹至mInitScale或mMaxScale
+                    //spring back to mInitScale or mMaxScale
                     if((currentScaleLevel < mInitScale) && !isAutoRotated){
-                        postDelayed(new AutoScaleRunnable(mInitScale, mLastScaleFocusX, mLastScaleFocusY, mSpringBackGradientScaleUpLevel, mSpringBackGradientScaleDownLevel), 16);
+                        postDelayed(new AutoScaleRunnable(mInitScale, mLastScaleFocusX, mLastScaleFocusY, mSpringBackGradientScaleUpLevel, mSpringBackGradientScaleDownLevel), springBackRunnableDelay);
                         isAutoScale = true;
                     }
                     else if((currentScaleLevel > mMaxScale) && !isAutoRotated){
-                        postDelayed(new AutoScaleRunnable(mMaxScale, mLastScaleFocusX, mLastScaleFocusY, mSpringBackGradientScaleUpLevel, mSpringBackGradientScaleDownLevel), 16);
+                        postDelayed(new AutoScaleRunnable(mMaxScale, mLastScaleFocusX, mLastScaleFocusY, mSpringBackGradientScaleUpLevel, mSpringBackGradientScaleDownLevel), springBackRunnableDelay);
                         isAutoScale = true;
                     }
                 }
                 break;
             case MotionEvent.ACTION_UP:
                 mLastPointerCount = 0;
-                mRotateGestureDetector.onTouchEvent(motionEvent);
                 break;
             case MotionEvent.ACTION_CANCEL:
                 mLastPointerCount = 0;
@@ -320,30 +278,10 @@ public class XuanImageView extends ImageView
 
     @Override
     public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
-//        if(!isRotated)
-//            isScaling = true;
-//        else
-//            isScaling = false;
-//        Log.d("isScaling in onScale()",""+isScaling);
-
-        /**
-         * scaleFactor > 1.0f表示放大
-         * scaleFactor < 1.0f表示缩小
-         * currentScaleLevel表示当前图片所积累的缩放水平
-         */
         float scaleFactor = scaleGestureDetector.getScaleFactor();
         currentScaleLevel = getCurrentScaleLevel();
 
         if((currentScaleLevel <= mMaxScale && scaleFactor > 1.0f) || (currentScaleLevel >= mInitScale && scaleFactor < 1.0f) || mRotateGestureDetector.IsRotated()){
-            /**
-             * 让图片放大缩小。
-             * 经过这次放大或者缩小后,图片当前的缩放水平可能小于mInitScale或者大于mMaxScale。
-             * 若图片当前的缩放水平小于mInitScale, 继续尝试缩小手势时,不符合if条件,则不会进行任何变换。
-             * 若图片当前的缩放水平大于mMaxScale, 继续尝试放大手势时,不符合if条件,则不会进行任何变换。
-             *
-             */
-
-
             if(!mRotateGestureDetector.IsRotated()) {
                 mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
                 checkBorderAndCenterWhenScale();
@@ -362,13 +300,14 @@ public class XuanImageView extends ImageView
     }
 
     private void checkBorderAndCenterWhenScale() {
-        RectF rectF = getMatrixRectF();
 
+        RectF rectF = getMatrixRectF();
         float deltaX = 0;
         float deltaY = 0;
 
         /**
-         * 若图片宽度或高度大于控件的宽度或高度,则要避免白边现象
+         * If width or height of image is bigger than that of XuanImageView,
+         * should prevent image's edge being far away from XuanImageView's edge.
          */
         if(rectF.width() >= XuanImageViewWidth){
             if(rectF.left > 0)
@@ -385,9 +324,9 @@ public class XuanImageView extends ImageView
         }
 
         /**
-         * 若图片的宽度或高度小于控件的宽度或高度,则令图片在宽度维度或高度维度上是居中的
+         * If width or height of image is smaller than that of XuanImageView,
+         * make sure the image, in width dimension or height dimension, is centered.
          */
-
         if(rectF.width() < XuanImageViewWidth){
             deltaX = XuanImageViewWidth / 2.0f - rectF.left - rectF.width() / 2.0f;
         }
@@ -400,15 +339,18 @@ public class XuanImageView extends ImageView
     }
 
     private void checkBorderAndCenterWhenTranslate() {
-        //实际上不用检查Center, 因为若图片宽度或高度小于控件宽度或高度时, 图片在宽度维度或者高度维度上无法移动
-        //这是在调用checkBorderAndCenterWhenTranslate()之前就已经处理好的。
+        /**
+         *  No need to check Center here because it has been handled before checkBorderAndCenterWhenTranslate() is invoked.
+         *  See "case MotionEvent.ACTION_MOVE: " in  onTouch(View view, MotionEvent motionEvent).
+         */
         RectF rectF = getMatrixRectF();
 
         float deltaX = 0;
         float deltaY = 0;
 
         /**
-         * 若图片宽度或高度大于控件的宽度或高度,则要避免白边现象
+         * If width or height of image is bigger than that of XuanImageView,
+         * should prevent image's edge being far away from XuanImageView's edge.
          */
         if(rectF.width() >= XuanImageViewWidth){
             if(rectF.left > 0)
@@ -430,23 +372,19 @@ public class XuanImageView extends ImageView
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector scaleGestureDetector) {
-        Log.d("onScaleBegin","-->");
+        Log.d("onScaleBegin-->","");
         return true;
     }
 
     @Override
     public void onScaleEnd(ScaleGestureDetector scaleGestureDetector) {
-        Log.d("onScaleEnd","-->");
+        Log.d("onScaleEnd-->","");
     }
 
-
-    /**
-     * 获取当前图像的缩放水平
-     * @return
-     */
     private float getCurrentScaleLevel(){
         float matrixArray[] = new float[9];
         mScaleMatrix.getValues(matrixArray);
+
         return matrixArray[Matrix.MSCALE_X];
     }
 
@@ -483,16 +421,11 @@ public class XuanImageView extends ImageView
 
     @Override
     public boolean StopRotate(RotationGestureDetector rotationGestureDetector) {
-        RectF rectF = getMatrixRectF();
-        Log.d("Rect left","" + rectF.left);
-        Log.d("Rect top","" + rectF.top);
-        Log.d("Rect right","" + rectF.right);
-        Log.d("Rect bottom","" + rectF.bottom);
-        mAngle = rotationGestureDetector.getAngle();//mAngle is within [-180 degress, 180 degress]
+        mAngle = rotationGestureDetector.getAngle();//mAngle's range: [-180 degress, 180 degress]
         float autoScaleAngle;
-        if(mAngle >= 60)
+        if(mAngle >= autoRotationTrigger)
             autoScaleAngle = 360 - mAngle;
-        else if(mAngle <= -60)
+        else if(mAngle <= - autoRotationTrigger)
             autoScaleAngle = -360 - mAngle;
         else
             autoScaleAngle = -mAngle;
@@ -510,36 +443,36 @@ public class XuanImageView extends ImageView
         float targetScale;
         float FocusX;
         float FocusY;
-        float scaleFacotr;
+        float scaleFactor;
 
-        public AutoScaleRunnable(float targetScale, float FocusX, float FocusY, float GradientScaleUp, float GradientScaleDown) {
+        AutoScaleRunnable(float targetScale, float FocusX, float FocusY, float GradientScaleUp, float GradientScaleDown) {
             this.targetScale = targetScale;
             this.FocusX = FocusX;
             this.FocusY = FocusY;
             currentScaleLevel = getCurrentScaleLevel();
             if(currentScaleLevel < targetScale)
-                scaleFacotr = GradientScaleUp;
+                scaleFactor = GradientScaleUp;
             else if(currentScaleLevel > targetScale)
-                scaleFacotr = GradientScaleDown;
+                scaleFactor = GradientScaleDown;
             else if(currentScaleLevel == targetScale)
-                scaleFacotr = 1.0f;
+                scaleFactor = 1.0f;
         }
 
         @Override
         public void run() {
-            mScaleMatrix.postScale(scaleFacotr, scaleFacotr, FocusX, FocusY);
+            mScaleMatrix.postScale(scaleFactor, scaleFactor, FocusX, FocusY);
             checkBorderAndCenterWhenScale();
             setImageMatrix(mScaleMatrix);
 
             currentScaleLevel = getCurrentScaleLevel();
-            if((scaleFacotr < 1.0f && currentScaleLevel > targetScale)
-                    ||(scaleFacotr > 1.0f && currentScaleLevel < targetScale)){
-                postDelayed(this,16);
+            if((scaleFactor < 1.0f && currentScaleLevel > targetScale)
+                    ||(scaleFactor > 1.0f && currentScaleLevel < targetScale)){
+                postDelayed(this, doubleTabScaleRunnableDelay);
             }
             else{
-                scaleFacotr = targetScale/ currentScaleLevel;
+                scaleFactor = targetScale/ currentScaleLevel;
 
-                mScaleMatrix.postScale(scaleFacotr, scaleFacotr, FocusX, FocusY);
+                mScaleMatrix.postScale(scaleFactor, scaleFactor, FocusX, FocusY);
                 checkBorderAndCenterWhenScale();
                 setImageMatrix(mScaleMatrix);
 
@@ -559,7 +492,7 @@ public class XuanImageView extends ImageView
         float initScaleLevel;
         double ScalePerTime;
 
-        public AutoRotateRunnable(float targetRotateAngle, float initScaleLevel, long TotalRotateTimes) {
+        AutoRotateRunnable(float targetRotateAngle, float initScaleLevel, long TotalRotateTimes) {
             this.targetRotateAngle = targetRotateAngle;
             this.TotalRotateTimes = TotalRotateTimes;
             AnglePerTime = targetRotateAngle / this.TotalRotateTimes;
@@ -598,31 +531,104 @@ public class XuanImageView extends ImageView
         }
     }
 
-    public void setAutoRotationRunnableDelay(long delay){
-        autoRotationRunnableDelay = delay;
+    /**
+     * An image is scaled to an InitScale to fit the size of XuanImageView at the very beginning.
+     * MaxScale = MaxScaleMultiple * InitScale holds.
+     * @param maxScaleMultiple
+     */
+    public void setMaxScaleMultiple(float maxScaleMultiple){
+        mMaxScaleMultiple = maxScaleMultiple;
     }
 
-    public void setAutoRotationRunnableTimes(long times){
-        autoRotationRunnableTimes = times;
+    /**
+     * When image's current scale level is smaller than DoubleTabScale, the image will scale up to DoubleTapScale if an double-tap gesture is detected.
+     * DoubleTapScale = DoubleTabScaleMultiple * InitScale holds.
+     * @param doubleTabScaleMultiple
+     */
+    public void setDoubleTabScaleMultiple(float doubleTabScaleMultiple){
+        mDoubleTabScaleMultiple = doubleTabScaleMultiple;
     }
 
-    public void setDoubleTapScaleRunnableDelay(long delay){
-        doubleTabScaleRunnableDelay = delay;
-    }
-
+    /**
+     * If current scale level is smaller than InitScale and image is not in rotation state,
+     * the image will scale up to InitScale with SpringBackGradientScaleUpLevel step by step.
+     * Default springBackGradientScaleUpLevel is  1.01f.
+     * @param springBackGradientScaleUpLevel
+     */
     public void setSpringBackGradientScaleUpLevel(float springBackGradientScaleUpLevel){
         mSpringBackGradientScaleUpLevel = springBackGradientScaleUpLevel;
     }
 
-    public void setmSpringBackGradientScaleDownLevel(float springBackGradientScaleDownLevel){
+    /**
+     * If current scale level is bigger than MaxScale and image is not in rotation state,
+     * the image will scale down to MaxScale with SpringBackGradientScaleDownLevel step by step.
+     * Default springBackGradientScaleDownLevel is 0.99f.
+     * @param springBackGradientScaleDownLevel
+     */
+    public void setSpringBackGradientScaleDownLevel(float springBackGradientScaleDownLevel){
         mSpringBackGradientScaleDownLevel = springBackGradientScaleDownLevel;
     }
 
-    public void setmDoubleTapGradientScaleUpLevel(float doubleTapGradientScaleUpLevel){
+    /**
+     * When image's current scale level is smaller than DoubleTabScale,
+     * the image will scale up to DoubleTapScale with DoubleTapGradientScaleUpLevel step by step if a double-tap gesture is detected.
+     * Default doubleTalGradientScaleUpLevel is 1.05f.
+     * @param doubleTapGradientScaleUpLevel
+     */
+    public void setDoubleTapGradientScaleUpLevel(float doubleTapGradientScaleUpLevel){
         mDoubleTapGradientScaleUpLevel = doubleTapGradientScaleUpLevel;
     }
 
+    /**
+     * When image's current scale level is bigger than DoubleTabScale,
+     * the image will scale down to InitScale with DoubleTapGradientScaleDownLevel step by step if a double-tap gesture is detected.
+     * Default doubleTabGradientScaleDownLevel is 0.95f.
+     * @param doubleTapGradientScaleDownLevel
+     */
     public void setDoubleTabGradientScaleDownLevel(float doubleTapGradientScaleDownLevel){
         mDoubleTapGradientScaleDownLevel = doubleTapGradientScaleDownLevel;
     }
+
+    /**
+     * When image's current rotation angle is bigger than AutoRotationTrigger, the image will rotate in the same direction and scale back to it's initial state if rotation gesture is released.
+     * When image's current rotation angle is smaller than AutoRotationTrigger, the image will rotate in the opposite direction and scale back to it's initial state if rotation gesture is released.
+     * Default AutoRotationTrigger is 60 (degrees).
+     * @param autoRotationTrigger
+     */
+    public void setAutoRotationTrigger(float autoRotationTrigger){
+        this.autoRotationTrigger = autoRotationTrigger;
+    }
+
+    /**
+     * Default SpringBackRunnableDelay is 10 (milliseconds).
+     * @param delay
+     */
+    public void setSpringBackRunnableDelay(int delay){
+        springBackRunnableDelay = delay;
+    }
+
+    /**
+     * Default DoubleTapRunnableDelay is 10 (milliseconds).
+     * @param delay
+     */
+    public void setDoubleTapScaleRunnableDelay(int delay){
+        doubleTabScaleRunnableDelay = delay;
+    }
+
+    /**
+     * Default AutoRotationRunnableDelay is 5 (milliseconds).
+     * @param delay
+     */
+    public void setAutoRotationRunnableDelay(int delay){
+        autoRotationRunnableDelay = delay;
+    }
+
+    /**
+     * Default AutoRotationRunnableTimes is 10 (times).
+     * @param times
+     */
+    public void setAutoRotationRunnableTimes(int times){
+        autoRotationRunnableTimes = times;
+    }
+
 }

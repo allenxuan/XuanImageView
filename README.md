@@ -10,7 +10,7 @@
 <a href="https://youtu.be/wxFAdm8J_bE" target="_blank">
   <img alt="Youtube"
        src="/art/youtube_icon.png"
-       width="25%">
+       width="20%">
 </a>
 
 ##Strategies:

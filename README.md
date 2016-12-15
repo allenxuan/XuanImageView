@@ -6,6 +6,12 @@
 ##Screenshot
 ![demo](/screenshots/XuanImageViewDemo.gif)
 
+##XuanImageView Demo Video - YouTube
+<a href="https://youtu.be/wxFAdm8J_bE" target="_blank">
+  <img alt="Youtube"
+       src="/art/youtube_icon.png">
+</a>
+
 ##Strategies:
 ---
 1. An image will be scaled and centered to fit the screen size at the very beginning (initial state).

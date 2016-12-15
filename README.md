@@ -5,7 +5,7 @@
 
 ##Screenshot
 ![demo](/screenshots/XuanImageViewDemo.gif)
-
+![Transition by Anish Chandran](https://raw.githubusercontent.com/andremion/Music-Player/master/art/music_player_concept_cropped.gif)
 
 ##Strategies:
 ---

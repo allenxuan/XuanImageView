@@ -1,5 +1,4 @@
 #XuanImageView
----
 [![Platform](https://img.shields.io/badge/Platform-Android-green.svg)](https://developer.android.com/index.html)
 [![License](https://img.shields.io/badge/License-Apache%202.0-red.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 ####XuanImageView extends ImageView with scaling function, rotating function, ect. Particularly, its auto-rotate-back-to-initial-state behavior mimics that in Google Photo.
@@ -15,7 +14,6 @@
 </a>
 
 ##Strategies:
----
 1. An image will be scaled and centered to fit the screen size at the very beginning (initial state).
 2. Double-tap triggers auto-scale behavior.
 3. If image's current scale level is bigger than maximum scale level or smaller than minimum scale level, the image will spring back to maximum scale level or minimum scale level.
@@ -23,7 +21,6 @@
 5. Image will rotate back to initial state when rotation gesture is released.
 
 ##Available Setters in code
----
 ###setMaxScaleMultiple(float maxScaleMultiple)
 An image is scaled to an InitScale to fit the size of XuanImageView at the very beginning. MaxScale = MaxScaleMultiple * InitScale holds.
 ###setDoubleTabScaleMultiple(float doubleTabScaleMultiple)
@@ -54,7 +51,6 @@ Default AutoRotationRunnableDelay is 5 (milliseconds).
 Default AutoRotationRunnableTimes is 10 (times).
 
 ##Available Setters in xml
----
 ```xml
 <com.allenxuan.xuanyihuang.xuanimageview.XuanImageView
         android:layout_width="match_parent"
@@ -78,7 +74,6 @@ Default AutoRotationRunnableTimes is 10 (times).
 
 
 #License
-
 ```
 Copyright 2016 Xuanyi Huang
 

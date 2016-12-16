@@ -18,6 +18,7 @@ Demo App is available on Googl Play
 <a href="https://play.google.com/store/apps/details?id=com.allenxuan.xuanyihuang.xuanimageviewproject" target="_blank">
   <img alt="Google Play"
        src="/art/get_it_on_googleplay.png"
+       width="20%"
        >
 </a>
 

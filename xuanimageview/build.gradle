@@ -8,12 +8,12 @@ ext {
     libraryName = 'xuanimageview'
     artifact = 'xuanimageview'
 
-    libraryDescription = 'A customed and extended ImageView for Android'
+    libraryDescription = 'XuanImageView extends ImageView of Android platform with scaling function, rotating function, ect. Particularly, its auto-rotate-back-to-initial-state behavior mimics that in Google Photo.'
 
     siteUrl = 'https://github.com/allenxuan/XuanImageView'
     gitUrl = 'https://github.com/allenxuan/XuanImageView.git'
 
-    libraryVersion = '0.1.0'
+    libraryVersion = '0.2.0'
 
     developerId = 'allenxuan'
     developerName = 'Xuanyi Huang'
@@ -31,8 +31,8 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "0.2.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 

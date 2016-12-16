@@ -14,7 +14,7 @@
 </a>
 
 ##Get Demo App
-Demo App is available on Googl Play
+Demo app is available on Googl Play :
 <a href="https://play.google.com/store/apps/details?id=com.allenxuan.xuanyihuang.xuanimageviewproject" target="_blank">
   <img alt="Google Play"
        src="/art/get_it_on_googleplay.png"
@@ -22,7 +22,7 @@ Demo App is available on Googl Play
        >
 </a>
 
-or you can get demo apk under /demo/demo-release.apk.
+Or you can get demo apk under /demo/demo-release.apk.
 
 ##Strategies:
 1. An image will be scaled and centered to fit the screen size at the very beginning (initial state).

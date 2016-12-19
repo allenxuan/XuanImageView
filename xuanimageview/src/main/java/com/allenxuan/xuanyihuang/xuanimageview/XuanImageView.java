@@ -34,6 +34,7 @@ public class XuanImageView extends ImageView
     private boolean mImageLoadedFirstTime;
     private float mInitScale;
     private float mMaxScale;
+    private boolean mRotationToggle;
     private float mMaxScaleMultiple;
     private float mDoubleTabScaleMultiple;
     private float mDoubleTabScale;
@@ -102,6 +103,7 @@ public class XuanImageView extends ImageView
         setOnTouchListener(this);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.xuanimageview);
+        mRotationToggle = a.getBoolean(R.styleable.xuanimageview_RotationToggle, true);
         mMaxScaleMultiple = a.getFloat(R.styleable.xuanimageview_MaxScaleMultiple, 4);
         mDoubleTabScaleMultiple = a.getFloat(R.styleable.xuanimageview_DoubleTabScaleMultiple, 2);
         mSpringBackGradientScaleUpLevel = a.getFloat(R.styleable.xuanimageview_SpringBackGradientScaleUpLevel, 1.01f);
@@ -194,7 +196,7 @@ public class XuanImageView extends ImageView
 
 
         currentScaleLevel = getCurrentScaleLevel();
-        if(mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError){
+        if((mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError) && mRotationToggle){
             // for Rotation gesture
             mRotateGestureDetector.onTouchEvent(motionEvent);
         }
@@ -529,6 +531,21 @@ public class XuanImageView extends ImageView
 
 
         }
+    }
+
+    /**
+     * Set a boolean value to determine whether rotation function is turned on.
+     * @param toggle determine whether rotation function is turned on
+     */
+    public void setRotationToggle(boolean toggle){
+        mRotationToggle = toggle;
+    }
+
+    /**
+     * @return current RotationToggle
+     */
+    public boolean getRotationToggle(){
+        return mRotationToggle;
     }
 
     /**

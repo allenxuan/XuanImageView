@@ -66,6 +66,8 @@ xuanImageView.setImageResource(resId);
 ##Available Setters
 
 ###Available Setters in code
+####setRotationToggle(boolean toggle)
+Set a boolean value to determine whether rotation function is turned on.
 ####setMaxScaleMultiple(float maxScaleMultiple)
 An image is scaled to an InitScale to fit the size of XuanImageView at the very beginning. MaxScale = MaxScaleMultiple * InitScale holds.
 ####setDoubleTabScaleMultiple(float doubleTabScaleMultiple)
@@ -103,6 +105,7 @@ Default AutoRotationRunnableTimes is 10 (times).
         android:src="@drawable/wallpaper1"
         android:scaleType="matrix"
         android:background="@android:color/background_dark"
+        app:RotationToggle="boolean value"
         app:MaxScaleMultiple="float value"
         app:DoubleTabScaleMultiple="float value"
         app:SpringBackGradientScaleUpLevel="float value"
@@ -118,6 +121,8 @@ Default AutoRotationRunnableTimes is 10 (times).
 ```
 
 ##Available Getters (in code)
+#### getRotationToggle()
+return current RotationToggle.
 ####getMaxScaleMultiple()
 Return current MaxScaleMultiple.
 ####getDoubleTabScaleMultiple()

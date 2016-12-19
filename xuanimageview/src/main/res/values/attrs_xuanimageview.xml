@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="xuanimageview">
+        <attr name="RotationToggle" format="boolean"/>
         <attr name="MaxScaleMultiple" format="float"/>
         <attr name="DoubleTabScaleMultiple" format="float"/>
         <attr name="SpringBackGradientScaleUpLevel" format="float"/>

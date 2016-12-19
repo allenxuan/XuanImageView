@@ -117,6 +117,30 @@ Default AutoRotationRunnableTimes is 10 (times).
         />
 ```
 
+##Available Getters (in code)
+####getMaxScaleMultiple()
+Return current MaxScaleMultiple.
+####getDoubleTabScaleMultiple()
+Return current DoubleTabScaleMultiple.
+####getSpringBackGradientScaleUpLevel()
+Return current SpringBackGradientScaleUpLevel.
+####getSpringBackGradientScaleDownLevel()
+Return current SpringBackGradientScaleDownLevel.
+####getDoubleTapGradientScaleUpLevel()
+Return current DoubleTapGradientScaleUpLevel.
+####getDoubleTapGradientScaleDownLevel()
+Return current DoubleTapGradientScaleDownLevel.
+####getAutoRotationTrigger()
+Return current AutoRotationTrigger.
+####getSpringBackRunnableDelay()
+Return springBackRunnableDelay;
+####getDoubleTabScaleRunnableDelay()
+Return doubleTabScaleRunnableDelay.
+####getAutoRotationRunnalbleDelay()
+return current AutoRotationRunnableDelay.
+####getAutoRotationRunnableTimes()
+Return current AutoRotationRunnableTimes.
+
 #License
 ```
 Copyright 2016 Xuanyi Huang

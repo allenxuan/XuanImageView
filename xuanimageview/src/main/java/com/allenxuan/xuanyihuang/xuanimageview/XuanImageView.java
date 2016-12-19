@@ -541,12 +541,27 @@ public class XuanImageView extends ImageView
     }
 
     /**
+     * @return current MaxScaleMultiple
+     */
+    public float getMaxScaleMultiple(){
+        return mMaxScaleMultiple;
+    }
+
+    /**
      * When image's current scale level is smaller than DoubleTabScale, the image will scale up to DoubleTapScale if an double-tap gesture is detected.
      * DoubleTapScale = DoubleTabScaleMultiple * InitScale holds.
      * @param doubleTabScaleMultiple
      */
     public void setDoubleTabScaleMultiple(float doubleTabScaleMultiple){
         mDoubleTabScaleMultiple = doubleTabScaleMultiple;
+    }
+
+    /**
+     *
+     * @return current DoubleTabScaleMultiple
+     */
+    public float getDoubleTabScaleMultiple(){
+        return mDoubleTabScaleMultiple;
     }
 
     /**
@@ -560,6 +575,14 @@ public class XuanImageView extends ImageView
     }
 
     /**
+     *
+     * @return current SpringBackGradientScaleUpLevel
+     */
+    public float getSpringBackGradientScaleUpLevel(){
+        return mSpringBackGradientScaleUpLevel;
+    }
+
+    /**
      * If current scale level is bigger than MaxScale and image is not in rotation state,
      * the image will scale down to MaxScale with SpringBackGradientScaleDownLevel step by step.
      * Default springBackGradientScaleDownLevel is 0.99f.
@@ -567,6 +590,14 @@ public class XuanImageView extends ImageView
      */
     public void setSpringBackGradientScaleDownLevel(float springBackGradientScaleDownLevel){
         mSpringBackGradientScaleDownLevel = springBackGradientScaleDownLevel;
+    }
+
+    /**
+     *
+     * @return current SpringBackGradientScaleDownLevel
+     */
+    public float getSpringBackGradientScaleDownLevel(){
+        return mSpringBackGradientScaleDownLevel;
     }
 
     /**
@@ -580,6 +611,13 @@ public class XuanImageView extends ImageView
     }
 
     /**
+     * @return current DoubleTapGradientScaleUpLevel
+     */
+    public float getDoubleTapGradientScaleUpLevel(){
+        return mDoubleTapGradientScaleUpLevel;
+    }
+
+    /**
      * When image's current scale level is bigger than DoubleTabScale,
      * the image will scale down to InitScale with DoubleTapGradientScaleDownLevel step by step if a double-tap gesture is detected.
      * Default doubleTabGradientScaleDownLevel is 0.95f.
@@ -587,6 +625,13 @@ public class XuanImageView extends ImageView
      */
     public void setDoubleTabGradientScaleDownLevel(float doubleTapGradientScaleDownLevel){
         mDoubleTapGradientScaleDownLevel = doubleTapGradientScaleDownLevel;
+    }
+
+    /**
+     * @return current DoubleTapGradientScaleDownLevel
+     */
+    public float getDoubleTapGradientScaleDownLevel(){
+        return mDoubleTapGradientScaleDownLevel;
     }
 
     /**
@@ -600,11 +645,25 @@ public class XuanImageView extends ImageView
     }
 
     /**
+     * @return current AutoRotationTrigger
+     */
+    public float getAutoRotationTrigger(){
+        return autoRotationTrigger;
+    }
+
+    /**
      * Default SpringBackRunnableDelay is 10 (milliseconds).
      * @param delay
      */
     public void setSpringBackRunnableDelay(int delay){
         springBackRunnableDelay = delay;
+    }
+
+    /**
+     * @return current SpringBackRunnableDelay
+     */
+    public int getSpringBackRunnableDelay(){
+        return springBackRunnableDelay;
     }
 
     /**
@@ -616,6 +675,13 @@ public class XuanImageView extends ImageView
     }
 
     /**
+     * @return current DoubleTabScaleRunnableDelay
+     */
+    public int getDoubleTabScaleRunnableDelay(){
+        return doubleTabScaleRunnableDelay;
+    }
+
+    /**
      * Default AutoRotationRunnableDelay is 5 (milliseconds).
      * @param delay
      */
@@ -624,11 +690,25 @@ public class XuanImageView extends ImageView
     }
 
     /**
+     * @return current AutoRotationRunnableDelay
+     */
+    public int getAutoRotationRunnalbleDelay(){
+        return autoRotationRunnableDelay;
+    }
+
+    /**
      * Default AutoRotationRunnableTimes is 10 (times).
      * @param times
      */
     public void setAutoRotationRunnableTimes(int times){
         autoRotationRunnableTimes = times;
+    }
+
+    /**
+     * @return current AutoRotationRunnableTimes
+     */
+    public int getAutoRotationRunnableTimes(){
+        return autoRotationRunnableTimes;
     }
 
 }

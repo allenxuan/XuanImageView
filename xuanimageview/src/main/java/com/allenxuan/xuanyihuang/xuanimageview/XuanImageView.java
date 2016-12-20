@@ -196,10 +196,11 @@ public class XuanImageView extends ImageView
 
 
         currentScaleLevel = getCurrentScaleLevel();
-        if((mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError) && mRotationToggle){
-            // for Rotation gesture
-            mRotateGestureDetector.onTouchEvent(motionEvent);
-        }
+        if(mRotationToggle)
+            if(mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError){
+                // for Rotation gesture
+                mRotateGestureDetector.onTouchEvent(motionEvent);
+            }
 
         //pointerCount won't be 0
         int pointerCount = motionEvent.getPointerCount();

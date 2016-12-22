@@ -15,8 +15,9 @@ public class RotationGestureDetector {
     private int ptrID1, ptrID2;
     private int ptrID1_Index, ptrID2_Index, ptr_Index;
     private float mAngle;
-    private float mAngleAtPresent;
     private float mPreviousAngle;
+    private float mAngleAtPresent;
+    private float mPreviousAngleAtPresent;
     private float mPivotX;
     private float mPivotY;
     private boolean mIsRotated;
@@ -120,7 +121,8 @@ public class RotationGestureDetector {
                     if (mListener != null) {
                         if(mIsRotated){
                             mPreviousAngle = mAngle;
-                            mAngle = mAngleAtPresent;
+                            mAngle = mPreviousAngle + (mAngleAtPresent - mPreviousAngleAtPresent);
+                            mPreviousAngleAtPresent = mAngleAtPresent;
                             mListener.OnRotate(this);
                         }
                         else if(Math.abs(mAngleAtPresent) >= mRotationTrigger){
@@ -128,6 +130,7 @@ public class RotationGestureDetector {
                             sY = nsY;
                             fX = nfX;
                             fY = nfY;
+                            mPreviousAngleAtPresent = 0;
                             mIsRotated = true;
                         }
                     }

@@ -237,6 +237,8 @@ public class XuanImageView extends ImageView
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
+        boolean parentDisallowInterceptTouchEventFlag = true;
+
         // for DoubleTap gesture
         mGestureDetector.onTouchEvent(motionEvent);
 
@@ -249,17 +251,27 @@ public class XuanImageView extends ImageView
         if (mRotationToggle) {
             if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION) {
                 if (mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError) {
+                    if(!mRotateGestureDetector.IsRotated())
+                        parentDisallowInterceptTouchEventFlag = false;
+
                     // for Rotation gesture
                     mRotateGestureDetector.onTouchEvent(motionEvent);
                 }
             } else if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM) {
                 if (mOrientation == XuanImageViewSettings.ORIENTATION_LANDSCAPE) {
                     if (mRotateGestureDetector.IsRotated() || Math.abs(currentAbsScaleLevel - mInitScale) < allowableFloatError) {
+                        if(!mRotateGestureDetector.IsRotated())
+                            parentDisallowInterceptTouchEventFlag = false;
+
                         // for Rotation gesture
                         mRotateGestureDetector.onTouchEvent(motionEvent);
+
                     }
                 } else if (mOrientation == XuanImageViewSettings.ORIENTATION_PORTRAIT) {
                     if (mRotateGestureDetector.IsRotated() || Math.abs(currentAbsScaleLevel - mTempInitPortraitScale) < allowablePortraitFloatError) {
+                        if(!mRotateGestureDetector.IsRotated())
+                            parentDisallowInterceptTouchEventFlag = false;
+
                         // for Rotation gesture
                         mRotateGestureDetector.onTouchEvent(motionEvent);
                     }
@@ -289,14 +301,12 @@ public class XuanImageView extends ImageView
 
         switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
-                if (Math.abs(currentScaleLevel - mInitScale) >= allowableFloatError)
-                    if (getParent() != null)
-                        getParent().requestDisallowInterceptTouchEvent(true);
+                if (getParent() != null)
+                    getParent().requestDisallowInterceptTouchEvent(parentDisallowInterceptTouchEventFlag);
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (Math.abs(currentScaleLevel - mInitScale) >= allowableFloatError)
-                    if (getParent() != null)
-                        getParent().requestDisallowInterceptTouchEvent(true);
+                if (getParent() != null)
+                    getParent().requestDisallowInterceptTouchEvent(parentDisallowInterceptTouchEventFlag);
                 float deltaX = pivotX - mLastX;
                 float deltaY = pivotY - mLastY;
 
@@ -726,6 +736,23 @@ public class XuanImageView extends ImageView
      */
     public boolean getRotationToggle() {
         return mRotationToggle;
+    }
+
+    /**Set AutoRotateCategory, there are two alternative values of it : XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION, XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM.
+     * @param category
+     */
+    public void setAutoRotateCategory(int category){
+        if(category == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION || category == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM)
+            mAutoRotateCategory = category;
+        else
+            mAutoRotateCategory = XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION;
+    }
+
+    /**
+     * @return current AutoRotateCategory
+     */
+    public int getAutoRotateCategory(){
+        return mAutoRotateCategory;
     }
 
     /**

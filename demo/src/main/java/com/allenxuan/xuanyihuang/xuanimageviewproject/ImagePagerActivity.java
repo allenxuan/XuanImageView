@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.allenxuan.xuanyihuang.xuanimageview.XuanImageView;
+import com.allenxuan.xuanyihuang.xuanimageview.constants.XuanImageViewSettings;
 
 public class ImagePagerActivity extends AppCompatActivity {
     private int[] images = new int[]{R.drawable.wallpaper1, R.drawable.wallpaper2, R.drawable.wallpaper3, R.drawable.wallpaper4};
@@ -37,6 +38,7 @@ public class ImagePagerActivity extends AppCompatActivity {
             @Override
             public Object instantiateItem(ViewGroup container, int position) {
                 XuanImageView xuanImageView = new XuanImageView(getBaseContext());
+                xuanImageView.setAutoRotateCategory(XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM);
                 xuanImageView.setImageResource(images[position]);
                 container.addView(xuanImageView);
 

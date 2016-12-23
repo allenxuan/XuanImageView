@@ -68,6 +68,8 @@ xuanImageView.setImageResource(resId);
 ###Available Setters in code
 ####setRotationToggle(boolean toggle)
 Set a boolean value to determine whether rotation function is turned on.
+####setAutoRotateCategory(int category)
+Set AutoRotateCategory, there are two alternative values of it : XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION, XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM.
 ####setMaxScaleMultiple(float maxScaleMultiple)
 An image is scaled to an InitScale to fit the size of XuanImageView at the very beginning. MaxScale = MaxScaleMultiple * InitScale holds.
 ####setDoubleTabScaleMultiple(float doubleTabScaleMultiple)
@@ -106,6 +108,7 @@ Default AutoRotationRunnableTimes is 10 (times).
         android:scaleType="matrix"
         android:background="@android:color/background_dark"
         app:RotationToggle="boolean value"
+        app:AutoRotateCategory="int value (1 for AUTO_ROTATE_CATEGORY_RESTORATION, 2 for AUTO_ROTATE_CATEGORY_MAGNETISM)"
         app:MaxScaleMultiple="float value"
         app:DoubleTabScaleMultiple="float value"
         app:SpringBackGradientScaleUpLevel="float value"
@@ -123,6 +126,8 @@ Default AutoRotationRunnableTimes is 10 (times).
 ##Available Getters (in code)
 #### getRotationToggle()
 return current RotationToggle.
+####getAutoRotateCategory()
+return current AutoRotateCategory.
 ####getMaxScaleMultiple()
 Return current MaxScaleMultiple.
 ####getDoubleTabScaleMultiple()

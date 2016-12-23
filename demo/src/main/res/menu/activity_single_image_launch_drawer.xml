@@ -4,10 +4,10 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/single_image"
-            android:title="Single Image" />
+            android:title="SingleImage(RESTORATION)" />
         <item
             android:id="@+id/image_pager"
-            android:title="View Pager" />
+            android:title="ViewPager(MAGNETISM)" />
     </group>
 
 

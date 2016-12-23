@@ -4,10 +4,11 @@
 ####XuanImageView extends ImageView with scaling function, rotating function, ect. Particularly, its auto-rotate-back-to-initial-state behavior mimics that in Google Photo.
 
 ##Screenshot
-![demo](/screenshots/XuanImageViewDemo.gif)
+![demo1](/screenshots/XuanImageViewDemo.gif)
+![demo2](/screenshots/XuanImageViewDem2.gif)
 
 ##XuanImageView demo video - YouTube
-<a href="https://youtu.be/wxFAdm8J_bE" target="_blank">
+<a href="https://youtu.be/inPvol4oUjY" target="_blank">
   <img alt="Youtube"
        src="/art/youtube_icon.png"
        width="20%">

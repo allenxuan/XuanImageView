@@ -7,7 +7,7 @@
 ####Auto-rotate category: RESTORATION
 ![demo1](/screenshots/XuanImageViewDemo.gif)
 
-########Auto-rotate category: MAGNETISM
+####Auto-rotate category: MAGNETISM
 ![demo2](/screenshots/XuanImageViewDemo2.gif)
 
 ##XuanImageView demo video - YouTube

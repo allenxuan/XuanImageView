@@ -5,6 +5,7 @@
 
 ##Screenshot
 ![demo1](/screenshots/XuanImageViewDemo.gif)
+
 ![demo2](/screenshots/XuanImageViewDemo2.gif)
 
 ##XuanImageView demo video - YouTube

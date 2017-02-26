@@ -72,10 +72,17 @@ public class SingleImageLaunchActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.single_image) {
-
-        } else if (id == R.id.image_pager) {
-            startActivity(new Intent(this, ImagePagerActivity.class));
+        switch (id){
+            case R.id.image_pager:
+                startActivity(new Intent(this, ImagePagerActivity.class));
+                break;
+            case R.id.with_glide:
+                startActivity(new Intent(this, WithGlideActivity.class));
+                break;
+            case R.id.with_picasso:
+                break;
+            case R.id.with_fresco:
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

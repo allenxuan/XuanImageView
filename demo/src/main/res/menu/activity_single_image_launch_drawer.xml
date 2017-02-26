@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
         <item
@@ -8,6 +9,15 @@
         <item
             android:id="@+id/image_pager"
             android:title="ViewPager(MAGNETISM)" />
+        <item
+            android:id="@+id/with_glide"
+            android:title="Glide"/>
+        <item
+            android:id="@+id/with_picasso"
+            android:title="Picasso"/>
+        <item
+            android:id="@+id/with_fresco"
+            android:title="Fresco"/>
     </group>
 
 

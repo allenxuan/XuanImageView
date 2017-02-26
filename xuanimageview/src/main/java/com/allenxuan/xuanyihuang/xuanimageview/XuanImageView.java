@@ -2,6 +2,8 @@ package com.allenxuan.xuanyihuang.xuanimageview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -22,7 +24,7 @@ import com.allenxuan.xuanyihuang.xuanimageview.constants.XuanImageViewSettings;
  */
 
 public class XuanImageView extends ImageView
-        implements ViewTreeObserver.OnGlobalLayoutListener,
+        implements
         View.OnTouchListener,
         ScaleGestureDetector.OnScaleGestureListener,
         RotationGestureDetector.OnRotationGestureListener {
@@ -73,6 +75,8 @@ public class XuanImageView extends ImageView
     private int autoRotationRunnableTimes;
     private int doubleTabScaleRunnableDelay;
     private int springBackRunnableDelay;
+    private boolean hasDrawable;
+    private boolean knowViewSize;
 
     public XuanImageView(Context context) {
         this(context, null);
@@ -84,9 +88,13 @@ public class XuanImageView extends ImageView
 
     public XuanImageView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        initialize(context, attrs);
+    }
+
+    private void initialize(Context context, AttributeSet attrs){
+        setScaleType(ScaleType.MATRIX);
 
         mScaleMatrix = new Matrix();
-        setScaleType(ScaleType.MATRIX);
 
         mScaleGestureDetector = new ScaleGestureDetector(context, this);
         mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
@@ -99,15 +107,6 @@ public class XuanImageView extends ImageView
 
                 if (isAutoScale)
                     return true;
-
-//                if(currentScaleLevel < mDoubleTabScale){
-//                    postDelayed(new AutoScaleRunnable(mDoubleTabScale, x, y, mDoubleTapGradientScaleUpLevel, mDoubleTapGradientScaleDownLevel),doubleTabScaleRunnableDelay);
-//                    isAutoScale = true;
-//                }
-//                else{
-//                    postDelayed(new AutoScaleRunnable(mInitScale, x, y, mDoubleTapGradientScaleUpLevel, mDoubleTapGradientScaleDownLevel),doubleTabScaleRunnableDelay);
-//                    isAutoScale = true;
-//                }
 
 
                 if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION) {
@@ -170,69 +169,99 @@ public class XuanImageView extends ImageView
         allowableFloatError = 1E-6;
         allowablePortraitFloatError = 1E-12;
         currentScaleLevel = 1;
-
-
     }
 
     @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        getViewTreeObserver().addOnGlobalLayoutListener(this);
-    }
+    public void setImageDrawable(Drawable drawable) {
+        super.setImageDrawable(drawable);
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-    }
-
-    /**
-     * Image should be centered after XuanImageView is initialized.
-     */
-    @Override
-    public void onGlobalLayout() {
-        if (!mImageLoadedFirstTime) {
-            getViewTreeObserver().removeGlobalOnLayoutListener(this);
-
-            // get width and height of XuanImageView
-            XuanImageViewWidth = getWidth();
-            XuanImageViewHeight = getHeight();
-
-            //get the center point of XuanImageView
-            XuanImageViewCenterX = XuanImageViewWidth / 2;
-            XuanImageViewCenterY = XuanImageViewHeight / 2;
-
-            // instantiate mRotationGestureDetector after dimension of XuanImageView is got.
-            mRotateGestureDetector = new RotationGestureDetector(this, XuanImageViewWidth);
-
-            //get width and height of the image
-            Drawable imageDrawable = getDrawable();
-            if (imageDrawable == null)
-                return;
-            int imageWidth = imageDrawable.getIntrinsicWidth();
-            int imageHeight = imageDrawable.getIntrinsicHeight();
-
-            //image is scaled to fit the size of XuanImageView at the very beginning.
-            float scale = Math.min(XuanImageViewWidth * 1.0f / imageWidth, XuanImageViewHeight * 1.0f / imageHeight);
-            float portraitscale = Math.min(XuanImageViewWidth * 1.0f / imageHeight, XuanImageViewHeight * 1.0f / imageWidth);
-
-            mInitScale = scale;
-            mInitPortraitScale = portraitscale;
-            mMaxScale = mMaxScaleMultiple * scale;
-            mPortraitMaxScale = mMaxScaleMultiple * portraitscale;
-            mDoubleTabScale = mDoubleTabScaleMultiple * scale;
-            mPortraitDoubleTabScale = mDoubleTabScaleMultiple * portraitscale;
-
-            //center of image overlaps with that of XuanImageView
-            int deltaX = XuanImageViewWidth / 2 - imageWidth / 2;
-            int deltaY = XuanImageViewHeight / 2 - imageHeight / 2;
-
-            mScaleMatrix.postTranslate(deltaX, deltaY);
-            mScaleMatrix.postScale(scale, scale, XuanImageViewWidth / 2, XuanImageViewHeight / 2);
-            setImageMatrix(mScaleMatrix);
-
-            mImageLoadedFirstTime = true;
-
+        if(drawable == null){
+            hasDrawable = false;
+            return;
         }
+
+        if(! drawableHasSize(drawable))
+            return;
+
+        hasDrawable = true;
+        initDrawableMatrix();
+    }
+
+    @Override
+    public void setImageResource(int resId) {
+        Drawable drawable = null;
+        try {
+            drawable = getResources().getDrawable(resId);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        setImageDrawable(drawable);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+
+        knowViewSize = true;
+        initDrawableMatrix();
+    }
+
+    private boolean drawableHasSize(Drawable drawable){
+        if((drawable.getIntrinsicHeight() <=0 || drawable.getIntrinsicWidth() <= 0)
+                &&(drawable.getMinimumHeight() <= 0 || drawable.getMinimumWidth() <=0)
+                &&(drawable.getBounds().height() <= 0 || drawable.getBounds().width() <= 0))
+            return false;
+        else
+            return true;
+    }
+
+    private void initDrawableMatrix(){
+        if(!hasDrawable)
+            return;
+        if(!knowViewSize)
+            return;
+
+        if(mScaleMatrix == null)
+            mScaleMatrix = new Matrix();
+        else
+            mScaleMatrix.reset();
+
+        // get width and height of XuanImageView
+        XuanImageViewWidth = getWidth();
+        XuanImageViewHeight = getHeight();
+
+        //get the center point of XuanImageView
+        XuanImageViewCenterX = XuanImageViewWidth / 2;
+        XuanImageViewCenterY = XuanImageViewHeight / 2;
+
+        // instantiate mRotationGestureDetector after dimension of XuanImageView is got.
+        mRotateGestureDetector = new RotationGestureDetector(this, XuanImageViewWidth);
+
+        //get width and height of the image
+        Drawable imageDrawable = getDrawable();
+        if (imageDrawable == null)
+            return;
+        int imageWidth = imageDrawable.getIntrinsicWidth();
+        int imageHeight = imageDrawable.getIntrinsicHeight();
+
+        //image is scaled to fit the size of XuanImageView at the very beginning.
+        float scale = Math.min(XuanImageViewWidth * 1.0f / imageWidth, XuanImageViewHeight * 1.0f / imageHeight);
+        float portraitscale = Math.min(XuanImageViewWidth * 1.0f / imageHeight, XuanImageViewHeight * 1.0f / imageWidth);
+
+        mInitScale = scale;
+        mInitPortraitScale = portraitscale;
+        mMaxScale = mMaxScaleMultiple * scale;
+        mPortraitMaxScale = mMaxScaleMultiple * portraitscale;
+        mDoubleTabScale = mDoubleTabScaleMultiple * scale;
+        mPortraitDoubleTabScale = mDoubleTabScaleMultiple * portraitscale;
+
+        //center of image overlaps with that of XuanImageView
+        int deltaX = XuanImageViewWidth / 2 - imageWidth / 2;
+        int deltaY = XuanImageViewHeight / 2 - imageHeight / 2;
+
+        mScaleMatrix.postTranslate(deltaX, deltaY);
+        mScaleMatrix.postScale(scale, scale, XuanImageViewWidth / 2, XuanImageViewHeight / 2);
+        setImageMatrix(mScaleMatrix);
     }
 
     @Override

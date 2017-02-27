@@ -25,17 +25,10 @@ public class WithGlideActivity extends AppCompatActivity {
         super.onStart();
 
 
-        Glide.with(this).load("http://www.uniwallpaper.com/static/images/eiffel-tower-wallpaper-18_fRZLW4V.jpg").listener(new RequestListener<String, GlideDrawable>() {
-            @Override
-            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                return false;
-            }
-
-            @Override
-            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                return false;
-            }
-        }).into(xuanImageView);
+        Glide.with(this)
+                .load("http://www.uniwallpaper.com/static/images/eiffel-tower-wallpaper-18_fRZLW4V.jpg")
+                .placeholder(R.drawable.wallpaper1)
+                .into(xuanImageView);
 //        xuanImageView.setImageResource(R.drawable.wallpaper1);
     }
 }

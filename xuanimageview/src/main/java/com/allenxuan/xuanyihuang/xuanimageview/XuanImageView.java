@@ -266,6 +266,9 @@ public class XuanImageView extends ImageView
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
+        if(mRotateGestureDetector == null)
+            return true;
+
         boolean parentDisallowInterceptTouchEventFlag = true;
 
         // for DoubleTap gesture

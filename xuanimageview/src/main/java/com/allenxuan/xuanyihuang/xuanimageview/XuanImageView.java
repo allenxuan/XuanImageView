@@ -23,17 +23,13 @@ import com.allenxuan.xuanyihuang.xuanimageview.constants.XuanImageViewSettings;
  * Created by xuanyihuang on 8/30/16.
  */
 
-public class XuanImageView extends ImageView
-        implements
-        ScaleGestureDetector.OnScaleGestureListener,
-        RotationGestureDetector.OnRotationGestureListener {
+public class XuanImageView extends ImageView{
     private int XuanImageViewWidth;
     private int XuanImageViewHeight;
     private int XuanImageViewCenterX;
     private int XuanImageViewCenterY;
     private int ImageCenterX;
     private int ImageCenterY;
-    private boolean mImageLoadedFirstTime;
     private int mOrientation;   //1 for portrait, 2 for landscape
     private int mAutoRotateCategory;
     private float mInitScale;   //for landscape
@@ -95,8 +91,87 @@ public class XuanImageView extends ImageView
 
         mScaleMatrix = new Matrix();
 
-        mScaleGestureDetector = new ScaleGestureDetector(context, this);
-        mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+        mScaleGestureDetector = new ScaleGestureDetector(context, constructOnScaleGestureListener());
+        mGestureDetector = new GestureDetector(context, constructOnGestureListener());
+
+        initCustomAttrs(context, attrs);
+
+        mOrientation = XuanImageViewSettings.ORIENTATION_LANDSCAPE;   //1 for portrait, 2 for landscape
+        isAutoScale = false;
+        mLastPointerCount = 0;
+        mAngle = 0;
+        mPreviousAngle = 0;
+        allowableFloatError = 1E-6;
+        allowablePortraitFloatError = 1E-12;
+        currentScaleLevel = 1;
+    }
+
+    private ScaleGestureDetector.OnScaleGestureListener constructOnScaleGestureListener() {
+        return new ScaleGestureDetector.OnScaleGestureListener() {
+            @Override
+            public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
+                float scaleFactor = scaleGestureDetector.getScaleFactor();
+                currentScaleLevel = getCurrentScaleLevel();
+                currentAbsScaleLevel = Math.abs(currentScaleLevel);
+                Log.d("currentScaleLevel", "" + currentScaleLevel);
+
+                if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION) {
+                    if ((currentScaleLevel <= mMaxScale && scaleFactor > 1.0f) || (currentScaleLevel >= mInitScale && scaleFactor < 1.0f) || mRotateGestureDetector.IsRotated()) {
+                        if (!mRotateGestureDetector.IsRotated()) {
+                            mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
+                            checkBorderAndCenterWhenScale();
+                        } else {
+                            mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
+                        }
+
+                    }
+                } else if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM) {
+                    if (mOrientation == XuanImageViewSettings.ORIENTATION_LANDSCAPE) {
+                        if ((currentAbsScaleLevel <= mMaxScale && scaleFactor > 1.0f) || (currentAbsScaleLevel >= mInitScale && scaleFactor < 1.0f) || mRotateGestureDetector.IsRotated()) {
+                            if (!mRotateGestureDetector.IsRotated()) {
+                                mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
+                                checkBorderAndCenterWhenScale();
+                            } else {
+                                mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
+                            }
+
+                        }
+                    } else if (mOrientation == XuanImageViewSettings.ORIENTATION_PORTRAIT) {
+                        if ((currentAbsScaleLevel <= mTempPortraitMaxScale && scaleFactor > 1.0f) || (currentAbsScaleLevel >= mTempInitPortraitScale && scaleFactor < 1.0f) || mRotateGestureDetector.IsRotated()) {
+                            if (!mRotateGestureDetector.IsRotated()) {
+                                mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
+                                checkBorderAndCenterWhenScale();
+                            } else {
+                                mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
+                            }
+
+                        }
+                    }
+
+                }
+
+                setImageMatrix(mScaleMatrix);
+                mLastScaleFocusX = scaleGestureDetector.getFocusX();
+                mLastScaleFocusY = scaleGestureDetector.getFocusY();
+
+                return true;
+            }
+
+            @Override
+            public boolean onScaleBegin(ScaleGestureDetector scaleGestureDetector) {
+                Log.d("onScaleBegin-->", "");
+                return true;
+            }
+
+            @Override
+            public void onScaleEnd(ScaleGestureDetector scaleGestureDetector) {
+                Log.d("onScaleEnd-->", "");
+            }
+        };
+    }
+
+    private GestureDetector.OnGestureListener constructOnGestureListener() {
+        return new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
                 currentScaleLevel = getCurrentScaleLevel();
@@ -138,8 +213,36 @@ public class XuanImageView extends ImageView
 
                 return true;
             }
-        });
+        };
+    }
 
+
+    private RotationGestureDetector.OnRotationGestureListener constructOnRotationGestureListener(){
+        return new RotationGestureDetector.OnRotationGestureListener() {
+            @Override
+            public boolean OnRotate(RotationGestureDetector rotationGestureDetector) {
+                mAngle = rotationGestureDetector.getAngle();
+                mPreviousAngle = rotationGestureDetector.getPreviousAngle();
+                mScaleMatrix.postRotate(mAngle - mPreviousAngle, rotationGestureDetector.getPivotX(), rotationGestureDetector.getPivotY());
+                Log.d("cuurrentScale onRotate", "" + getCurrentScaleLevel());
+                setImageMatrix(mScaleMatrix);
+
+                return true;
+            }
+
+            @Override
+            public boolean StopRotate(RotationGestureDetector rotationGestureDetector) {
+                if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION)
+                    AutoRotateRestoration(rotationGestureDetector);
+                else if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM)
+                    AutoRotateMagnetism(rotationGestureDetector);
+
+                return true;
+            }
+        };
+    }
+
+    private void initCustomAttrs(Context context, AttributeSet attrs){
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.xuanimageview);
         mRotationToggle = a.getBoolean(R.styleable.xuanimageview_RotationToggle, true);
         mAutoRotateCategory = a.getInteger(R.styleable.xuanimageview_AutoRotateCategory, XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION);
@@ -155,17 +258,6 @@ public class XuanImageView extends ImageView
         autoRotationRunnableDelay = a.getInteger(R.styleable.xuanimageview_AutoRotationRunnableDelay, 5);
         autoRotationRunnableTimes = a.getInteger(R.styleable.xuanimageview_AutoRotationRunnableTimes, 10);
         a.recycle();
-
-
-        mOrientation = XuanImageViewSettings.ORIENTATION_LANDSCAPE;   //1 for portrait, 2 for landscape
-        isAutoScale = false;
-        mLastPointerCount = 0;
-        mAngle = 0;
-        mPreviousAngle = 0;
-        mImageLoadedFirstTime = false;
-        allowableFloatError = 1E-6;
-        allowablePortraitFloatError = 1E-12;
-        currentScaleLevel = 1;
     }
 
     @Override
@@ -232,7 +324,7 @@ public class XuanImageView extends ImageView
         XuanImageViewCenterY = XuanImageViewHeight / 2;
 
         // instantiate mRotationGestureDetector after dimension of XuanImageView is got.
-        mRotateGestureDetector = new RotationGestureDetector(this, XuanImageViewWidth);
+        mRotateGestureDetector = new RotationGestureDetector(constructOnRotationGestureListener(), XuanImageViewWidth);
 
         //get width and height of the image
         Drawable imageDrawable = getDrawable();
@@ -399,57 +491,6 @@ public class XuanImageView extends ImageView
         return true;
     }
 
-
-    @Override
-    public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
-        float scaleFactor = scaleGestureDetector.getScaleFactor();
-        currentScaleLevel = getCurrentScaleLevel();
-        currentAbsScaleLevel = Math.abs(currentScaleLevel);
-
-        if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION) {
-            if ((currentScaleLevel <= mMaxScale && scaleFactor > 1.0f) || (currentScaleLevel >= mInitScale && scaleFactor < 1.0f) || mRotateGestureDetector.IsRotated()) {
-                if (!mRotateGestureDetector.IsRotated()) {
-                    mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
-                    checkBorderAndCenterWhenScale();
-                } else {
-                    mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
-                }
-
-            }
-        } else if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM) {
-            if (mOrientation == XuanImageViewSettings.ORIENTATION_LANDSCAPE) {
-                if ((currentAbsScaleLevel <= mMaxScale && scaleFactor > 1.0f) || (currentAbsScaleLevel >= mInitScale && scaleFactor < 1.0f) || mRotateGestureDetector.IsRotated()) {
-                    if (!mRotateGestureDetector.IsRotated()) {
-                        mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
-                        checkBorderAndCenterWhenScale();
-                    } else {
-                        mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
-                    }
-
-                }
-            } else if (mOrientation == XuanImageViewSettings.ORIENTATION_PORTRAIT) {
-                if ((currentAbsScaleLevel <= mTempPortraitMaxScale && scaleFactor > 1.0f) || (currentAbsScaleLevel >= mTempInitPortraitScale && scaleFactor < 1.0f) || mRotateGestureDetector.IsRotated()) {
-                    if (!mRotateGestureDetector.IsRotated()) {
-                        mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
-                        checkBorderAndCenterWhenScale();
-                    } else {
-                        mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
-                    }
-
-                }
-            }
-
-        }
-
-        setImageMatrix(mScaleMatrix);
-        mLastScaleFocusX = scaleGestureDetector.getFocusX();
-        mLastScaleFocusY = scaleGestureDetector.getFocusY();
-
-        Log.d("currentScaleLevel", "" + getCurrentScaleLevel());
-
-        return true;
-    }
-
     private void checkBorderAndCenterWhenScale() {
 
         RectF rectF = getMatrixRectF();
@@ -521,17 +562,6 @@ public class XuanImageView extends ImageView
     }
 
 
-    @Override
-    public boolean onScaleBegin(ScaleGestureDetector scaleGestureDetector) {
-        Log.d("onScaleBegin-->", "");
-        return true;
-    }
-
-    @Override
-    public void onScaleEnd(ScaleGestureDetector scaleGestureDetector) {
-        Log.d("onScaleEnd-->", "");
-    }
-
     private float getCurrentScaleLevel() {
         float matrixArray[] = new float[9];
         mScaleMatrix.getValues(matrixArray);
@@ -555,28 +585,6 @@ public class XuanImageView extends ImageView
         RectF rectF = getMatrixRectF();
         ImageCenterX = (int) ((rectF.left + rectF.right) / 2);
         ImageCenterY = (int) ((rectF.top + rectF.bottom) / 2);
-
-        return true;
-    }
-
-
-    @Override
-    public boolean OnRotate(RotationGestureDetector rotationGestureDetector) {
-        mAngle = rotationGestureDetector.getAngle();
-        mPreviousAngle = rotationGestureDetector.getPreviousAngle();
-        mScaleMatrix.postRotate(mAngle - mPreviousAngle, rotationGestureDetector.getPivotX(), rotationGestureDetector.getPivotY());
-        Log.d("cuurrentScale onRotate", "" + getCurrentScaleLevel());
-        setImageMatrix(mScaleMatrix);
-
-        return true;
-    }
-
-    @Override
-    public boolean StopRotate(RotationGestureDetector rotationGestureDetector) {
-        if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION)
-            AutoRotateRestoration(rotationGestureDetector);
-        else if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM)
-            AutoRotateMagnetism(rotationGestureDetector);
 
         return true;
     }

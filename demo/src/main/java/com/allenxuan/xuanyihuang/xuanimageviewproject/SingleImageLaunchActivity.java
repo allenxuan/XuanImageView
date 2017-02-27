@@ -80,8 +80,7 @@ public class SingleImageLaunchActivity extends AppCompatActivity
                 startActivity(new Intent(this, WithGlideActivity.class));
                 break;
             case R.id.with_picasso:
-                break;
-            case R.id.with_fresco:
+                startActivity(new Intent(this, WithPicassoActivity.class));
                 break;
         }
 

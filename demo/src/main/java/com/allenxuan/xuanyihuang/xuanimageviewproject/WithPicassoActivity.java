@@ -5,17 +5,15 @@ import android.os.Bundle;
 
 import com.allenxuan.xuanyihuang.xuanimageview.XuanImageView;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
+import com.squareup.picasso.Picasso;
 
-public class WithGlideActivity extends AppCompatActivity {
+public class WithPicassoActivity extends AppCompatActivity {
     private XuanImageView xuanImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_with_glide);
+        setContentView(R.layout.activity_with_picasso);
 
         xuanImageView = (XuanImageView) findViewById(R.id.withGlide_ImageView);
     }
@@ -25,8 +23,6 @@ public class WithGlideActivity extends AppCompatActivity {
         super.onStart();
 
 
-        Glide.with(this)
-                .load("http://i.imgur.com/5yeBVeM.jpg")
-                .into(xuanImageView);
+        Picasso.with(this).load("http://i.imgur.com/DvpvklR.png").into(xuanImageView);
     }
 }

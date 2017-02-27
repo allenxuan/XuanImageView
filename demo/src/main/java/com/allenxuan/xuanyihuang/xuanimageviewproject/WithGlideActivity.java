@@ -27,8 +27,6 @@ public class WithGlideActivity extends AppCompatActivity {
 
         Glide.with(this)
                 .load("http://www.uniwallpaper.com/static/images/eiffel-tower-wallpaper-18_fRZLW4V.jpg")
-                .placeholder(R.drawable.wallpaper1)
                 .into(xuanImageView);
-//        xuanImageView.setImageResource(R.drawable.wallpaper1);
     }
 }

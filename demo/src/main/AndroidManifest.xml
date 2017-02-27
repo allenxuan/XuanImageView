@@ -38,7 +38,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".SingleImageLaunchActivity" />
         </activity>
-        <activity android:name=".WithPicassoActivity"></activity>
+        <activity
+            android:name=".WithPicassoActivity"
+            android:parentActivityName=".SingleImageLaunchActivity">
+            <!-- meta-data 用于支持 support 4.0 以及以下来指明上级活动 -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SingleImageLaunchActivity" />
+        </activity>
     </application>
 
 </manifest>

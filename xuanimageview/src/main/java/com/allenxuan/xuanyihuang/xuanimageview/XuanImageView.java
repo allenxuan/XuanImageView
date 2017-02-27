@@ -25,7 +25,6 @@ import com.allenxuan.xuanyihuang.xuanimageview.constants.XuanImageViewSettings;
 
 public class XuanImageView extends ImageView
         implements
-        View.OnTouchListener,
         ScaleGestureDetector.OnScaleGestureListener,
         RotationGestureDetector.OnRotationGestureListener {
     private int XuanImageViewWidth;
@@ -91,7 +90,7 @@ public class XuanImageView extends ImageView
         initialize(context, attrs);
     }
 
-    private void initialize(Context context, AttributeSet attrs){
+    private void initialize(Context context, AttributeSet attrs) {
         setScaleType(ScaleType.MATRIX);
 
         mScaleMatrix = new Matrix();
@@ -141,8 +140,6 @@ public class XuanImageView extends ImageView
             }
         });
 
-        setOnTouchListener(this);
-
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.xuanimageview);
         mRotationToggle = a.getBoolean(R.styleable.xuanimageview_RotationToggle, true);
         mAutoRotateCategory = a.getInteger(R.styleable.xuanimageview_AutoRotateCategory, XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION);
@@ -175,12 +172,12 @@ public class XuanImageView extends ImageView
     public void setImageDrawable(Drawable drawable) {
         super.setImageDrawable(drawable);
 
-        if(drawable == null){
+        if (drawable == null) {
             hasDrawable = false;
             return;
         }
 
-        if(! drawableHasSize(drawable))
+        if (!drawableHasSize(drawable))
             return;
 
         hasDrawable = true;
@@ -192,7 +189,7 @@ public class XuanImageView extends ImageView
         Drawable drawable = null;
         try {
             drawable = getResources().getDrawable(resId);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         setImageDrawable(drawable);
@@ -206,22 +203,22 @@ public class XuanImageView extends ImageView
         initDrawableMatrix();
     }
 
-    private boolean drawableHasSize(Drawable drawable){
-        if((drawable.getIntrinsicHeight() <=0 || drawable.getIntrinsicWidth() <= 0)
-                &&(drawable.getMinimumHeight() <= 0 || drawable.getMinimumWidth() <=0)
-                &&(drawable.getBounds().height() <= 0 || drawable.getBounds().width() <= 0))
+    private boolean drawableHasSize(Drawable drawable) {
+        if ((drawable.getIntrinsicHeight() <= 0 || drawable.getIntrinsicWidth() <= 0)
+                && (drawable.getMinimumHeight() <= 0 || drawable.getMinimumWidth() <= 0)
+                && (drawable.getBounds().height() <= 0 || drawable.getBounds().width() <= 0))
             return false;
         else
             return true;
     }
 
-    private void initDrawableMatrix(){
-        if(!hasDrawable)
+    private void initDrawableMatrix() {
+        if (!hasDrawable)
             return;
-        if(!knowViewSize)
+        if (!knowViewSize)
             return;
 
-        if(mScaleMatrix == null)
+        if (mScaleMatrix == null)
             mScaleMatrix = new Matrix();
         else
             mScaleMatrix.reset();
@@ -265,8 +262,8 @@ public class XuanImageView extends ImageView
     }
 
     @Override
-    public boolean onTouch(View view, MotionEvent motionEvent) {
-        if(mRotateGestureDetector == null)
+    public boolean onTouchEvent(MotionEvent motionEvent) {
+        if (mRotateGestureDetector == null)
             return true;
 
         boolean parentDisallowInterceptTouchEventFlag = true;
@@ -283,7 +280,7 @@ public class XuanImageView extends ImageView
         if (mRotationToggle) {
             if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION) {
                 if (mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError) {
-                    if(!mRotateGestureDetector.IsRotated())
+                    if (!mRotateGestureDetector.IsRotated())
                         parentDisallowInterceptTouchEventFlag = false;
 
                     // for Rotation gesture
@@ -292,7 +289,7 @@ public class XuanImageView extends ImageView
             } else if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM) {
                 if (mOrientation == XuanImageViewSettings.ORIENTATION_LANDSCAPE) {
                     if (mRotateGestureDetector.IsRotated() || Math.abs(currentAbsScaleLevel - mInitScale) < allowableFloatError) {
-                        if(!mRotateGestureDetector.IsRotated())
+                        if (!mRotateGestureDetector.IsRotated())
                             parentDisallowInterceptTouchEventFlag = false;
 
                         // for Rotation gesture
@@ -301,7 +298,7 @@ public class XuanImageView extends ImageView
                     }
                 } else if (mOrientation == XuanImageViewSettings.ORIENTATION_PORTRAIT) {
                     if (mRotateGestureDetector.IsRotated() || Math.abs(currentAbsScaleLevel - mTempInitPortraitScale) < allowablePortraitFloatError) {
-                        if(!mRotateGestureDetector.IsRotated())
+                        if (!mRotateGestureDetector.IsRotated())
                             parentDisallowInterceptTouchEventFlag = false;
 
                         // for Rotation gesture
@@ -401,6 +398,7 @@ public class XuanImageView extends ImageView
 
         return true;
     }
+
 
     @Override
     public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
@@ -770,11 +768,13 @@ public class XuanImageView extends ImageView
         return mRotationToggle;
     }
 
-    /**Set AutoRotateCategory, there are two alternative values of it : XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION, XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM.
+    /**
+     * Set AutoRotateCategory, there are two alternative values of it : XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION, XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM.
+     *
      * @param category
      */
-    public void setAutoRotateCategory(int category){
-        if(category == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION || category == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM)
+    public void setAutoRotateCategory(int category) {
+        if (category == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION || category == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM)
             mAutoRotateCategory = category;
         else
             mAutoRotateCategory = XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION;
@@ -783,7 +783,7 @@ public class XuanImageView extends ImageView
     /**
      * @return current AutoRotateCategory
      */
-    public int getAutoRotateCategory(){
+    public int getAutoRotateCategory() {
         return mAutoRotateCategory;
     }
 

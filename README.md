@@ -32,7 +32,8 @@ Or you can get demo apk under /demo/demo-release.apk.
 ##Compatibility:
 XuanImageView is now compatible with Glide, Picasso and other image loading libraries that use ImageView as image container.
 <br>
-Fresco's DraweeView is a descendant of Android [View](https://developer.android.com/reference/android/view/View.html) class.
+Fresco's DraweeView is a descendant of Android [View](https://developer.android.com/reference/android/view/View.html) class, if you want extended functionality
+like scaling and rotating, I suggest that you search for other libraries compatible with Fresco.
 
 
 ##Strategies:
@@ -55,7 +56,7 @@ allprojects {
 and add this to your module's build.gradle.
 ```
 dependencies {
-    compile 'com.github.allenxuan:xuanimageview:0.3.0'
+    compile 'com.github.allenxuan:xuanimageview:0.4.0'
 }
 ```
 ###Basic use (just like a normal ImageView)
@@ -132,6 +133,8 @@ Default AutoRotationRunnableTimes is 10 (times).
         app:AutoRotationRunnableTimes="int value"
         />
 ```
+
+to use the custom attributes defined with XuanImageView, please
 
 ##Available Getters (in code)
 #### getRotationToggle()

@@ -111,44 +111,46 @@ public class XuanImageView extends ImageView{
             @Override
             public boolean onScale(ScaleGestureDetector scaleGestureDetector) {
                 float scaleFactor = scaleGestureDetector.getScaleFactor();
+
                 currentScaleLevel = getCurrentScaleLevel();
                 currentAbsScaleLevel = Math.abs(currentScaleLevel);
                 Log.d("currentScaleLevel", "" + currentScaleLevel);
 
-                if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION) {
-                    if ((currentScaleLevel <= mMaxScale && scaleFactor > 1.0f) || (currentScaleLevel >= mInitScale && scaleFactor < 1.0f) || mRotateGestureDetector.IsRotated()) {
-                        if (!mRotateGestureDetector.IsRotated()) {
-                            mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
-                            checkBorderAndCenterWhenScale();
-                        } else {
-                            mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
-                        }
+                boolean isRotating = false;
+                boolean justScale = false;
 
-                    }
-                } else if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM) {
-                    if (mOrientation == XuanImageViewSettings.ORIENTATION_LANDSCAPE) {
-                        if ((currentAbsScaleLevel <= mMaxScale && scaleFactor > 1.0f) || (currentAbsScaleLevel >= mInitScale && scaleFactor < 1.0f) || mRotateGestureDetector.IsRotated()) {
-                            if (!mRotateGestureDetector.IsRotated()) {
-                                mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
-                                checkBorderAndCenterWhenScale();
-                            } else {
-                                mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
-                            }
-
-                        }
-                    } else if (mOrientation == XuanImageViewSettings.ORIENTATION_PORTRAIT) {
-                        if ((currentAbsScaleLevel <= mTempPortraitMaxScale && scaleFactor > 1.0f) || (currentAbsScaleLevel >= mTempInitPortraitScale && scaleFactor < 1.0f) || mRotateGestureDetector.IsRotated()) {
-                            if (!mRotateGestureDetector.IsRotated()) {
-                                mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
-                                checkBorderAndCenterWhenScale();
-                            } else {
-                                mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
-                            }
-
-                        }
-                    }
-
+                if(mRotateGestureDetector.IsRotated()){
+                    // is rotating
+                    isRotating = true;
                 }
+                else{
+                    // not rotating, just scaling
+                    if(mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION){
+                        if((currentScaleLevel <= mMaxScale && scaleFactor > 1.0f) || (currentScaleLevel >= mInitScale && scaleFactor < 1.0f))
+                            justScale = true;
+
+                    }
+                    else if(mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM){
+                        if (mOrientation == XuanImageViewSettings.ORIENTATION_LANDSCAPE) {
+                            if ((currentAbsScaleLevel <= mMaxScale && scaleFactor > 1.0f) || (currentAbsScaleLevel >= mInitScale && scaleFactor < 1.0f))
+                                justScale = true;
+                        } else if (mOrientation == XuanImageViewSettings.ORIENTATION_PORTRAIT) {
+                            if ((currentAbsScaleLevel <= mTempPortraitMaxScale && scaleFactor > 1.0f) || (currentAbsScaleLevel >= mTempInitPortraitScale && scaleFactor < 1.0f))
+                                justScale = true;
+                        }
+                    }
+                }
+
+
+                if(isRotating) {
+                    mScaleMatrix.postScale(scaleFactor, scaleFactor, mRotateGestureDetector.getPivotX(), mRotateGestureDetector.getPivotY());
+                }
+                else if(justScale)
+                {
+                    mScaleMatrix.postScale(scaleFactor, scaleFactor, scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
+                    checkBorderAndCenterWhenScale();
+                }
+
 
                 setImageMatrix(mScaleMatrix);
                 mLastScaleFocusX = scaleGestureDetector.getFocusX();

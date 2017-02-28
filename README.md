@@ -29,6 +29,11 @@ Demo app is available on Googl Play :
 
 Or you can get demo apk under /demo/demo-release.apk.
 
+##Compatibility:
+XuanImageView is now compatible with Glide, Picasso and other image loading libraries that use ImageView as image container.
+Fresco's DraweeView is a descendant of Android [View](https://developer.android.com/reference/android/view/View.html) class.
+
+
 ##Strategies:
 1. An image will be scaled and centered to fit the screen size at the very beginning (initial state).
 2. Double-tap triggers auto-scale behavior.

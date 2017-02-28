@@ -134,8 +134,6 @@ Default AutoRotationRunnableTimes is 10 (times).
         />
 ```
 
-to use the custom attributes defined with XuanImageView, please
-
 ##Available Getters (in code)
 #### getRotationToggle()
 return current RotationToggle.

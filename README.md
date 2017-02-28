@@ -31,6 +31,7 @@ Or you can get demo apk under /demo/demo-release.apk.
 
 ##Compatibility:
 XuanImageView is now compatible with Glide, Picasso and other image loading libraries that use ImageView as image container.
+<br>
 Fresco's DraweeView is a descendant of Android [View](https://developer.android.com/reference/android/view/View.html) class.
 
 

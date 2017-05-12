@@ -88,7 +88,6 @@ public class XuanImageView extends ImageView{
 
     private void initialize(Context context, AttributeSet attrs) {
         setScaleType(ScaleType.MATRIX);
-
         mScaleMatrix = new Matrix();
 
         mScaleGestureDetector = new ScaleGestureDetector(context, constructOnScaleGestureListener());

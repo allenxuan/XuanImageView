@@ -74,6 +74,7 @@ public class RotationGestureDetector {
     }
 
     public boolean onTouchEvent(MotionEvent event){
+        Log.d("RotationGestureDetector", event + "");
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 //ptrID1 : first finger pressing down
@@ -99,6 +100,7 @@ public class RotationGestureDetector {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
+                Log.d("canStillRotate" , "" + canStillRotate());
                 if(canStillRotate()){
                     ptrID1_Index = event.findPointerIndex(ptrID1);
                     ptrID2_Index = event.findPointerIndex(ptrID2);
@@ -115,8 +117,6 @@ public class RotationGestureDetector {
                     mPivotY = (nsY + nfY) / 2.0f;
 
                     mAngleAtPresent = angleBetweenLines(fX, fY, sX, sY, nfX, nfY, nsX, nsY);
-
-
 
                     if (mListener != null) {
                         if(mIsRotated){
@@ -178,7 +178,7 @@ public class RotationGestureDetector {
         if (angle < -180.f) angle += 360.0f;
         if (angle > 180.f) angle -= 360.0f;
 
-        Log.d("angleBetweenLines","" + angle);
+        Log.d("AngleBetweenLines :","" + angle);
         return angle;
     }
 

@@ -2,8 +2,6 @@ package com.allenxuan.xuanyihuang.xuanimageview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -12,9 +10,6 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.view.View;
-import android.view.ViewTreeObserver;
-import android.widget.ImageView;
 
 import com.allenxuan.xuanyihuang.xuanimageview.GestureDetectors.RotationGestureDetector;
 import com.allenxuan.xuanyihuang.xuanimageview.constants.XuanImageViewSettings;
@@ -23,7 +18,7 @@ import com.allenxuan.xuanyihuang.xuanimageview.constants.XuanImageViewSettings;
  * Created by xuanyihuang on 8/30/16.
  */
 
-public class XuanImageView extends ImageView{
+public class XuanImageView extends android.support.v7.widget.AppCompatImageView{
     private int XuanImageViewWidth;
     private int XuanImageViewHeight;
     private int XuanImageViewCenterX;
@@ -100,8 +95,6 @@ public class XuanImageView extends ImageView{
         mLastPointerCount = 0;
         mAngle = 0;
         mPreviousAngle = 0;
-        allowableFloatError = 1E-6;
-        allowablePortraitFloatError = 1E-12;
         currentScaleLevel = 1;
     }
 
@@ -113,7 +106,7 @@ public class XuanImageView extends ImageView{
 
                 currentScaleLevel = getCurrentScaleLevel();
                 currentAbsScaleLevel = Math.abs(currentScaleLevel);
-                Log.d("currentScaleLevel", "" + currentScaleLevel);
+                Log.d("CurrentAbsScaleLevel", "" + currentAbsScaleLevel);
 
                 boolean isRotating = false;
                 boolean justScale = false;
@@ -225,7 +218,7 @@ public class XuanImageView extends ImageView{
                 mAngle = rotationGestureDetector.getAngle();
                 mPreviousAngle = rotationGestureDetector.getPreviousAngle();
                 mScaleMatrix.postRotate(mAngle - mPreviousAngle, rotationGestureDetector.getPivotX(), rotationGestureDetector.getPivotY());
-                Log.d("cuurrentScale onRotate", "" + getCurrentScaleLevel());
+
                 setImageMatrix(mScaleMatrix);
 
                 return true;
@@ -258,6 +251,18 @@ public class XuanImageView extends ImageView{
         doubleTabScaleRunnableDelay = a.getInteger(R.styleable.xuanimageview_DoubleTapScaleRunnableDelay, 10);
         autoRotationRunnableDelay = a.getInteger(R.styleable.xuanimageview_AutoRotationRunnableDelay, 5);
         autoRotationRunnableTimes = a.getInteger(R.styleable.xuanimageview_AutoRotationRunnableTimes, 10);
+        try {
+            allowableFloatError = Double.parseDouble(a.getString(R.styleable.xuanimageview_AllowableFloatError));
+        }catch (Exception e){
+            allowableFloatError = 1E-6;   // for normal display aspect ratio
+//        allowableFloatError = 3E-3;   // for Galaxy S8
+        }
+        try {
+            allowablePortraitFloatError = Double.parseDouble(a.getString(R.styleable.xuanimageview_AllowablePortraitFloatError));
+        }catch (Exception e){
+            allowablePortraitFloatError = 1E-12;  // for normal display aspect ratio
+//        allowablePortraitFloatError = 5E-8;   //for Galaxy S8
+        }
         a.recycle();
     }
 
@@ -372,7 +377,9 @@ public class XuanImageView extends ImageView{
         currentAbsScaleLevel = Math.abs(currentScaleLevel);
         if (mRotationToggle) {
             if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_RESTORATION) {
-                if (mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError) {
+                if (mRotateGestureDetector.IsRotated() || Math.abs(currentScaleLevel - mInitScale) < allowableFloatError
+                        || ((motionEvent.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP)
+                        || ((motionEvent.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_UP)) {
                     if (!mRotateGestureDetector.IsRotated())
                         parentDisallowInterceptTouchEventFlag = false;
 
@@ -381,7 +388,9 @@ public class XuanImageView extends ImageView{
                 }
             } else if (mAutoRotateCategory == XuanImageViewSettings.AUTO_ROTATE_CATEGORY_MAGNETISM) {
                 if (mOrientation == XuanImageViewSettings.ORIENTATION_LANDSCAPE) {
-                    if (mRotateGestureDetector.IsRotated() || Math.abs(currentAbsScaleLevel - mInitScale) < allowableFloatError) {
+                    if (mRotateGestureDetector.IsRotated() || Math.abs(currentAbsScaleLevel - mInitScale) < allowableFloatError
+                            || ((motionEvent.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP)
+                            || ((motionEvent.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_UP)) {
                         if (!mRotateGestureDetector.IsRotated())
                             parentDisallowInterceptTouchEventFlag = false;
 
@@ -390,7 +399,9 @@ public class XuanImageView extends ImageView{
 
                     }
                 } else if (mOrientation == XuanImageViewSettings.ORIENTATION_PORTRAIT) {
-                    if (mRotateGestureDetector.IsRotated() || Math.abs(currentAbsScaleLevel - mTempInitPortraitScale) < allowablePortraitFloatError) {
+                    if (mRotateGestureDetector.IsRotated() || Math.abs(currentAbsScaleLevel - mTempInitPortraitScale) < allowablePortraitFloatError
+                            || ((motionEvent.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP)
+                            || ((motionEvent.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_UP)) {
                         if (!mRotateGestureDetector.IsRotated())
                             parentDisallowInterceptTouchEventFlag = false;
 
@@ -982,6 +993,41 @@ public class XuanImageView extends ImageView{
      */
     public int getAutoRotationRunnableTimes() {
         return autoRotationRunnableTimes;
+    }
+
+
+    /**
+     * Notice the Image can only start to be rotated when it's in initial state. But the image may be scaled up or down a little bit by ScaleGestureDetector
+     * in advance when you try to rotate it, hence, currentScaleLevel is not precisely equal to initScaleLevel. Here, an AllowableFloatError is existed to handle
+     * this situation. When Math.abs(currentScaleLevel - initScaleLevel) < allowableFloatError, RotateGestureDetector.onTouchEvent() can be invoked.
+     * Default allowableFloatError is 1E-6, it should be compatible with most of devices. For devices whose display resolution and aspect ratio is not normal, allowableFloatError may
+     * need to be tuned. eg., for Galaxy S8, 3E-3 works well. Of course, 3E-3 also works for most of devices because 1E-6 < 3E-3.
+     * @param allowableFloatError
+     */
+    public void setAllowableFloatError(double allowableFloatError){
+        this.allowableFloatError = allowableFloatError;
+    }
+
+    public double getAllowableFloatError(){
+        return allowableFloatError;
+    }
+
+    /**
+     * In  AUTO_ROTATE_CATEGORY_MAGNETISM mode, the image may be showed under a fixed rotation angle like 90 degrees, 270 degrees,
+     * 450 degrees, ect., then allowablePortraitFloatError should handle the situation when currentPortraitScaleLevel is not precisely
+     * equal to initPortraitScaleLevel.
+     * Default allowablePortraitFloatError is 1E-12, it should be compatible with most of devices. For devices whose display resolution and aspect ratio is not normal, allowablePortraitFloatError may
+     * need to be tuned. eg., for Galaxy S8, 5E-8 works well. Of course, 5E-8 also works for most of devices because 1E-12 < 5E-8.
+     * @see XuanImageView#setAllowableFloatError(double)
+     *
+     * @param allowablePortraitFloatError
+     */
+    public void setAllowablePortraitFloatError(double allowablePortraitFloatError){
+        this.allowablePortraitFloatError = allowablePortraitFloatError;
+    }
+
+    public double getAllowablePortraitFloatError(){
+        return allowablePortraitFloatError;
     }
 
 }

@@ -5,6 +5,8 @@
         <attr name="AutoRotateCategory" format="integer"/>
         <attr name="MaxScaleMultiple" format="float"/>
         <attr name="DoubleTabScaleMultiple" format="float"/>
+        <attr name="AllowableFloatError" format="string"/>
+        <attr name="AllowablePortraitFloatError" format="string"/>
         <attr name="SpringBackGradientScaleUpLevel" format="float"/>
         <attr name="SpringBackGradientScaleDownLevel" format="float"/>
         <attr name="DoubleTapGradientScaleUpLevel" format="float"/>

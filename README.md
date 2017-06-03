@@ -56,7 +56,7 @@ allprojects {
 and add this to your module's build.gradle.
 ```
 dependencies {
-    compile 'com.github.allenxuan:xuanimageview:0.4.0'
+    compile 'com.github.allenxuan:xuanimageview:0.5.0'
 }
 ```
 ### Basic use (just like a normal ImageView)

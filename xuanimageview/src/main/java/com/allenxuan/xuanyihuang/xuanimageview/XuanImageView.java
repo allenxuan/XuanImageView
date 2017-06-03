@@ -999,9 +999,9 @@ public class XuanImageView extends android.support.v7.widget.AppCompatImageView{
     /**
      * Notice the Image can only start to be rotated when it's in initial state. But the image may be scaled up or down a little bit by ScaleGestureDetector
      * in advance when you try to rotate it, hence, currentScaleLevel is not precisely equal to initScaleLevel. Here, an AllowableFloatError is existed to handle
-     * this situation. When Math.abs(currentScaleLevel - initScaleLevel) < allowableFloatError, RotateGestureDetector.onTouchEvent() can be invoked.
+     * this situation. When Math.abs(currentScaleLevel - initScaleLevel) is smaller than allowableFloatError, RotateGestureDetector.onTouchEvent() can be invoked.
      * Default allowableFloatError is 1E-6, it should be compatible with most of devices. For devices whose display resolution and aspect ratio is not normal, allowableFloatError may
-     * need to be tuned. eg., for Galaxy S8, 3E-3 works well. Of course, 3E-3 also works for most of devices because 1E-6 < 3E-3.
+     * need to be tuned. eg., for Galaxy S8, 3E-3 works well. Of course, 3E-3 also works for most of devices because 1E-6 is smaller than 3E-3.
      * @param allowableFloatError
      */
     public void setAllowableFloatError(double allowableFloatError){
@@ -1017,7 +1017,7 @@ public class XuanImageView extends android.support.v7.widget.AppCompatImageView{
      * 450 degrees, ect., then allowablePortraitFloatError should handle the situation when currentPortraitScaleLevel is not precisely
      * equal to initPortraitScaleLevel.
      * Default allowablePortraitFloatError is 1E-12, it should be compatible with most of devices. For devices whose display resolution and aspect ratio is not normal, allowablePortraitFloatError may
-     * need to be tuned. eg., for Galaxy S8, 5E-8 works well. Of course, 5E-8 also works for most of devices because 1E-12 < 5E-8.
+     * need to be tuned. eg., for Galaxy S8, 5E-8 works well. Of course, 5E-8 also works for most of devices because 1E-12 is smaller than 5E-8.
      * @see XuanImageView#setAllowableFloatError(double)
      *
      * @param allowablePortraitFloatError

@@ -109,6 +109,19 @@ Default DoubleTapScaleRunnableDelay is 10 (milliseconds).
 Default AutoRotationRunnableDelay is 5 (milliseconds).
 #### setAutoRotationRunnableTimes(int times)
 Default AutoRotationRunnableTimes is 10 (times).
+#### setAllowableFloatError(double allowableFloatError)
+Notice the Image can only start to be rotated when it's in initial state. But the image may be scaled up or down a little bit by ScaleGestureDetector in advance when you try to rotate it,
+hence, currentScaleLevel is not precisely equal to initScaleLevel. Here, an AllowableFloatError is existed to handle this situation. When Math.abs(currentScaleLevel - initScaleLevel) < allowableFloatError,
+RotateGestureDetector.onTouchEvent() can be invoked. Default allowableFloatError is 1E-6, it should be compatible with most of devices.
+For devices whose display resolution and aspect ratio is not normal, allowableFloatError may need to be tuned. eg., for Galaxy S8, 3E-3 works well.
+Of course, 3E-3 also works for most of devices because 1E-6 < 3E-3.
+#### setAllowablePortraitFloatError(double allowablePortraitFloatError)
+In  AUTO_ROTATE_CATEGORY_MAGNETISM mode, the image may be showed under a fixed rotation angle like 90 degrees, 270 degrees,450 degrees, ect.,
+then allowablePortraitFloatError should handle the situation when currentPortraitScaleLevel is not precisely
+equal to initPortraitScaleLevel. Default allowablePortraitFloatError is 1E-12, it should be compatible with most of devices.
+For devices whose display resolution and aspect ratio is not normal, allowablePortraitFloatError may need to be tuned. eg., for Galaxy S8, 5E-8 works well. 
+Of course, 5E-8 also works for most of devices because 1E-12 < 5E-8.
+
 
 ### Available Setters in xml
 ```xml
@@ -131,6 +144,8 @@ Default AutoRotationRunnableTimes is 10 (times).
         app:DoubleTapScaleRunnableDelay="int value"
         app:AutoRotationRunnableDelay="int value"
         app:AutoRotationRunnableTimes="int value"
+        app:AllowableFloatError="double value"
+        app:AllowablePortraitFloatError="double value"
         />
 ```
 
@@ -161,6 +176,10 @@ Return doubleTabScaleRunnableDelay.
 return current AutoRotationRunnableDelay.
 #### getAutoRotationRunnableTimes()
 Return current AutoRotationRunnableTimes.
+#### public double getAllowableFloatError()
+Return allowableFloatError.
+#### public double getAllowablePortraitFloatError()
+Return allowablePortraitFloatError
 
 # License
 ```

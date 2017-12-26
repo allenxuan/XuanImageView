@@ -14,7 +14,9 @@
         android:layout_height="match_parent"
         android:background="@android:color/background_dark"
         android:scaleType="matrix"
-        android:src="@drawable/wallpaper1"
+        android:src="@drawable/long_pic"
+        app:MaxScaleMultiple="20"
+        app:AllowableFloatError="3E-3"
         />
 
 </RelativeLayout>
